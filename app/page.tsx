@@ -15,7 +15,11 @@ import {
   Smartphone,
   ClipboardList,
   Monitor,
-  ExternalLink
+  ExternalLink,
+  User,
+  Plus,
+  Save,
+  Trash2
 } from 'lucide-react'
 
 const SectionLabel = ({ text, number }: { text: string, number: string }) => (
@@ -48,6 +52,47 @@ const HighlightBox = ({ children }: { children: React.ReactNode }) => (
 )
 
 export default function DuballoStandaloneManual() {
+  const [selectedDay, setSelectedDay] = React.useState<number>(new Date().getDate())
+  const [assignments, setAssignments] = React.useState<Record<number, string>>({
+    1: '이지윤 실장',
+    2: '박준영 매니저',
+    3: '이지윤 실장',
+    4: '박준영 매니저',
+    8: '이지윤 실장',
+    9: '박준영 매니저',
+    10: '이지윤 실장',
+    11: '박준영 매니저'
+  })
+  const [logs, setLogs] = React.useState<Record<number, string>>({
+    1: '오전 외래 환자 폭주로 인해 키오스크 대기 줄 발생. 안내 인력 추가 투입 검토 필요.',
+    2: '실손24 연계 작업 안정화 확인. 서류 누락률 5% 이하로 감소.',
+    3: 'F2층 위치 문의 환자 다수. 엘리베이터 앞 안내판 크기 확대 건의.'
+  })
+
+  const [tempManager, setTempManager] = React.useState('')
+  const [tempLog, setTempLog] = React.useState('')
+
+  React.useEffect(() => {
+    setTempManager(assignments[selectedDay] || '')
+    setTempLog(logs[selectedDay] || '')
+  }, [selectedDay, assignments, logs])
+
+  const handleSave = () => {
+    setAssignments(prev => ({ ...prev, [selectedDay]: tempManager }))
+    setLogs(prev => ({ ...prev, [selectedDay]: tempLog }))
+  }
+
+  const handleDelete = () => {
+    const newAssignments = { ...assignments }
+    const newLogs = { ...logs }
+    delete newAssignments[selectedDay]
+    delete newLogs[selectedDay]
+    setAssignments(newAssignments)
+    setLogs(newLogs)
+    setTempManager('')
+    setTempLog('')
+  }
+
   return (
     <div className="bg-white min-h-screen font-sans selection:bg-[#33bbc5] selection:text-white pb-40 md:pb-80">
       {/* 00. HERO SECTION - RESPONSIVE OPTIMIZED */}
@@ -103,6 +148,148 @@ export default function DuballoStandaloneManual() {
                     <div className="text-[10px] md:text-sm font-mono font-bold">DUBALLO ADMINISTRATION</div>
                   </div>
                </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 05-B. OPERATIONAL CALENDAR & LOG */}
+      <section className="mb-32 md:mb-64">
+        <div className="max-w-7xl mx-auto px-6 lg:px-20 pt-24">
+          <SectionLabel number="05-B" text="Operations Management" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Left: Info & Controls */}
+            <div className="lg:col-span-3">
+              <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none mb-8">
+                Daily<br />Ops Log
+              </h2>
+              <p className="text-sm font-bold text-gray-500 mb-12">
+                날짜를 선택하여 담당자를 지정하고 업무 내용을 기록하세요.
+              </p>
+              
+              <div className="space-y-6">
+                <div className="p-6 bg-gray-50 border-2 border-black">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5] mb-2">Selected Date</div>
+                  <div className="text-2xl font-black">2026.05.{selectedDay.toString().padStart(2, '0')}</div>
+                </div>
+
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                    <div className="w-3 h-3 bg-[#33bbc5]"></div> Assigned
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                    <div className="w-3 h-3 border-2 border-black"></div> Selected
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Middle: Calendar */}
+            <div className="lg:col-span-5">
+              <div className="border-4 border-black p-6 md:p-8">
+                <div className="grid grid-cols-7 gap-1 mb-8">
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
+                    <div key={day} className="text-[10px] font-black uppercase text-center opacity-40 pb-4">{day}</div>
+                  ))}
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={`empty-${i}`} className="aspect-square"></div>
+                  ))}
+                  {Array.from({ length: 31 }).map((_, i) => {
+                    const day = i + 1
+                    const isSelected = selectedDay === day
+                    const isAssigned = assignments[day]
+                    const isSunday = (day + 5) % 7 === 1
+                    const isSaturday = (day + 5) % 7 === 0
+
+                    return (
+                      <button 
+                        key={day} 
+                        onClick={() => setSelectedDay(day)}
+                        className={`
+                          aspect-square border-2 transition-all relative group flex flex-col items-center justify-center
+                          ${isSelected ? 'border-black bg-black text-white z-10 scale-105 shadow-xl' : 'border-gray-100 hover:border-[#33bbc5]'}
+                          ${isSunday ? 'text-red-500' : isSaturday ? 'text-blue-500' : ''}
+                          ${isSelected && (isSunday || isSaturday) ? 'text-white' : ''}
+                        `}
+                      >
+                        <span className="text-sm md:text-base font-bold">{day}</span>
+                        {isAssigned && !isSelected && (
+                          <div className="absolute bottom-1 w-1 h-1 bg-[#33bbc5] rounded-full"></div>
+                        )}
+                        {isAssigned && isSelected && (
+                          <div className="absolute bottom-1 w-1 h-1 bg-white rounded-full"></div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="flex justify-between items-center pt-6 border-t-2 border-black/5">
+                   <div className="text-sm font-black uppercase tracking-widest">May 2026</div>
+                   <div className="flex gap-2">
+                      <button className="w-8 h-8 border-2 border-black flex items-center justify-center hover:bg-black hover:text-white transition-all"><ChevronRight size={14} className="rotate-180" /></button>
+                      <button className="w-8 h-8 border-2 border-black flex items-center justify-center hover:bg-black hover:text-white transition-all"><ChevronRight size={14} /></button>
+                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Input Panel */}
+            <div className="lg:col-span-4">
+              <motion.div 
+                key={selectedDay}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-black text-white p-8 h-full flex flex-col"
+              >
+                <div className="flex justify-between items-start mb-8">
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5] mb-2">Daily Assignment</div>
+                    <h3 className="text-2xl font-black uppercase tracking-tight">Set Personnel</h3>
+                  </div>
+                  <div className="p-2 bg-white/10 rounded-lg">
+                    <User size={20} className="text-[#33bbc5]" />
+                  </div>
+                </div>
+
+                <div className="space-y-6 flex-1">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">담당자 성명</label>
+                    <input 
+                      type="text" 
+                      value={tempManager}
+                      onChange={(e) => setTempManager(e.target.value)}
+                      placeholder="예: 이지윤 실장"
+                      className="w-full bg-white/5 border-b-2 border-white/20 p-3 font-bold focus:border-[#33bbc5] outline-none transition-colors text-lg"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">주요 업무 및 특이사항</label>
+                    <textarea 
+                      value={tempLog}
+                      onChange={(e) => setTempLog(e.target.value)}
+                      placeholder="오늘의 업무 일지를 작성하세요..."
+                      rows={6}
+                      className="w-full bg-white/5 border-2 border-white/10 p-4 font-bold focus:border-[#33bbc5] outline-none transition-colors text-sm leading-relaxed resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-8 flex gap-3">
+                  <button 
+                    onClick={handleSave}
+                    className="flex-1 bg-[#33bbc5] text-white py-4 font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all"
+                  >
+                    <Save size={16} /> Save Entry
+                  </button>
+                  <button 
+                    onClick={handleDelete}
+                    className="w-14 bg-white/10 text-white flex items-center justify-center hover:bg-red-500 transition-all"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
