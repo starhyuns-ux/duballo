@@ -306,38 +306,62 @@ export default function DuballoStandaloneManual() {
                   </div>
                   
                   <div className="space-y-4">
-                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block">Select Staff Member</label>
-                    <div className="grid grid-cols-1 gap-2">
+                    {/* Quick Add / Input */}
+                    <div>
+                      <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">Direct Entry / New Staff</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          value={tempManager}
+                          onChange={(e) => setTempManager(e.target.value)}
+                          disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
+                          placeholder="담당자 이름 입력..."
+                          className="flex-1 bg-white/5 border-b-2 border-white/20 p-2 font-bold focus:border-[#33bbc5] outline-none transition-colors"
+                        />
+                        {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
+                          <button 
+                            onClick={handleSave}
+                            className="bg-[#33bbc5] px-4 py-2 font-black uppercase text-[10px] tracking-widest hover:bg-white hover:text-black transition-all"
+                          >
+                            Assign
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="h-[1px] bg-white/10 my-4"></div>
+
+                    {/* Selection List - Simplified */}
+                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">Quick Select</label>
+                    <div className="flex flex-wrap gap-2">
                       {teamMembers.map(member => (
                         <button
                           key={member.id}
                           disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
-                          onClick={() => setTempManager(member.name)}
-                          className={`flex items-center gap-3 p-3 transition-all text-left border ${
+                          onClick={() => {
+                            setTempManager(member.name)
+                            // Auto save on selection if it's today
+                            if (isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())) {
+                              const key = formatDateKey(selectedDate)
+                              setAssignments(prev => ({ ...prev, [key]: member.name }))
+                            }
+                          }}
+                          className={`px-3 py-2 text-xs font-bold transition-all border ${
                             tempManager === member.name 
                               ? 'bg-[#33bbc5] border-[#33bbc5] text-white' 
-                              : 'bg-white/5 border-white/10 hover:border-white/30 text-white/60'
+                              : 'bg-white/5 border-white/10 hover:border-white/30 text-white/40'
                           } ${!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? 'cursor-not-allowed opacity-50' : ''}`}
                         >
-                          <div className="w-8 h-8 rounded-full bg-gray-800 overflow-hidden flex-shrink-0">
-                            <img src={member.image} alt="" className="w-full h-full object-cover grayscale" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm font-black">{member.name}</div>
-                            <div className="text-[8px] uppercase font-bold opacity-50">{member.title}</div>
-                          </div>
-                          {tempManager === member.name && <CheckCircle2 size={16} />}
+                          {member.name}
                         </button>
                       ))}
                     </div>
-                    
-                    {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                      <button 
-                        onClick={handleSave}
-                        className="w-full bg-white text-black py-3 font-black uppercase tracking-widest text-[10px] hover:bg-[#33bbc5] hover:text-white transition-all mt-2"
-                      >
-                        Confirm Assignment
-                      </button>
+
+                    {!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
+                      <div className="pt-4 border-t border-white/5 flex items-center gap-2">
+                        <Clock size={12} className="text-[#33bbc5]" />
+                        <span className="text-[9px] font-bold uppercase tracking-tight text-white/40">Read Only for Historical Data</span>
+                      </div>
                     )}
                   </div>
                 </motion.div>
