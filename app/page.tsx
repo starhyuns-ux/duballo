@@ -52,45 +52,64 @@ const HighlightBox = ({ children }: { children: React.ReactNode }) => (
 )
 
 export default function DuballoStandaloneManual() {
-  const [selectedDay, setSelectedDay] = React.useState<number>(new Date().getDate())
-  const [assignments, setAssignments] = React.useState<Record<number, string>>({
-    1: '이지윤 실장',
-    2: '박준영 매니저',
-    3: '이지윤 실장',
-    4: '박준영 매니저',
-    8: '이지윤 실장',
-    9: '박준영 매니저',
-    10: '이지윤 실장',
-    11: '박준영 매니저'
+  const [viewDate, setViewDate] = React.useState(new Date())
+  const [selectedDate, setSelectedDate] = React.useState(new Date())
+  
+  const [assignments, setAssignments] = React.useState<Record<string, string>>({
+    '2026-05-01': '이지윤 실장',
+    '2026-05-02': '박준영 매니저',
+    '2026-05-03': '이지윤 실장'
   })
-  const [logs, setLogs] = React.useState<Record<number, string>>({
-    1: '오전 외래 환자 폭주로 인해 키오스크 대기 줄 발생. 안내 인력 추가 투입 검토 필요.',
-    2: '실손24 연계 작업 안정화 확인. 서류 누락률 5% 이하로 감소.',
-    3: 'F2층 위치 문의 환자 다수. 엘리베이터 앞 안내판 크기 확대 건의.'
+  const [logs, setLogs] = React.useState<Record<string, string>>({
+    '2026-05-01': '오전 외래 환자 폭주로 인해 키오스크 대기 줄 발생. 안내 인력 추가 투입 검토 필요.',
+    '2026-05-02': '실손24 연계 작업 안정화 확인. 서류 누락률 5% 이하로 감소.'
   })
 
   const [tempManager, setTempManager] = React.useState('')
   const [tempLog, setTempLog] = React.useState('')
 
+  const formatDateKey = (date: Date) => {
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`
+  }
+
   React.useEffect(() => {
-    setTempManager(assignments[selectedDay] || '')
-    setTempLog(logs[selectedDay] || '')
-  }, [selectedDay, assignments, logs])
+    const key = formatDateKey(selectedDate)
+    setTempManager(assignments[key] || '')
+    setTempLog(logs[key] || '')
+  }, [selectedDate, assignments, logs])
 
   const handleSave = () => {
-    setAssignments(prev => ({ ...prev, [selectedDay]: tempManager }))
-    setLogs(prev => ({ ...prev, [selectedDay]: tempLog }))
+    const key = formatDateKey(selectedDate)
+    setAssignments(prev => ({ ...prev, [key]: tempManager }))
+    setLogs(prev => ({ ...prev, [key]: tempLog }))
   }
 
   const handleDelete = () => {
+    const key = formatDateKey(selectedDate)
     const newAssignments = { ...assignments }
     const newLogs = { ...logs }
-    delete newAssignments[selectedDay]
-    delete newLogs[selectedDay]
+    delete newAssignments[key]
+    delete newLogs[key]
     setAssignments(newAssignments)
     setLogs(newLogs)
     setTempManager('')
     setTempLog('')
+  }
+
+  const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate()
+  const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay()
+
+  const changeMonth = (offset: number) => {
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + offset, 1))
+  }
+
+  const isToday = (year: number, month: number, day: number) => {
+    const today = new Date()
+    return today.getFullYear() === year && today.getMonth() === month && today.getDate() === day
+  }
+
+  const isSelected = (year: number, month: number, day: number) => {
+    return selectedDate.getFullYear() === year && selectedDate.getMonth() === month && selectedDate.getDate() === day
   }
 
   return (
@@ -170,7 +189,7 @@ export default function DuballoStandaloneManual() {
               <div className="space-y-6">
                 <div className="p-6 bg-gray-50 border-2 border-black">
                   <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5] mb-2">Selected Date</div>
-                  <div className="text-2xl font-black">2026.05.{selectedDay.toString().padStart(2, '0')}</div>
+                  <div className="text-2xl font-black">{formatDateKey(selectedDate).replace(/-/g, '.')}</div>
                 </div>
 
                 <div className="flex flex-wrap gap-4">
@@ -191,32 +210,40 @@ export default function DuballoStandaloneManual() {
                   {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
                     <div key={day} className="text-[10px] font-black uppercase text-center opacity-40 pb-4">{day}</div>
                   ))}
-                  {Array.from({ length: 5 }).map((_, i) => (
+                  {/* Empty cells for starting day offset */}
+                  {Array.from({ length: getFirstDayOfMonth(viewDate.getFullYear(), viewDate.getMonth()) }).map((_, i) => (
                     <div key={`empty-${i}`} className="aspect-square"></div>
                   ))}
-                  {Array.from({ length: 31 }).map((_, i) => {
+                  {Array.from({ length: getDaysInMonth(viewDate.getFullYear(), viewDate.getMonth()) }).map((_, i) => {
                     const day = i + 1
-                    const isSelected = selectedDay === day
-                    const isAssigned = assignments[day]
-                    const isSunday = (day + 5) % 7 === 1
-                    const isSaturday = (day + 5) % 7 === 0
+                    const year = viewDate.getFullYear()
+                    const month = viewDate.getMonth()
+                    const active = isSelected(year, month, day)
+                    const dateKey = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`
+                    const isAssigned = assignments[dateKey]
+                    
+                    const firstDay = getFirstDayOfMonth(year, month)
+                    const dayOfWeek = (day + firstDay - 1) % 7
+                    const isSunday = dayOfWeek === 0
+                    const isSaturday = dayOfWeek === 6
 
                     return (
                       <button 
                         key={day} 
-                        onClick={() => setSelectedDay(day)}
+                        onClick={() => setSelectedDate(new Date(year, month, day))}
                         className={`
                           aspect-square border-2 transition-all relative group flex flex-col items-center justify-center
-                          ${isSelected ? 'border-black bg-black text-white z-10 scale-105 shadow-xl' : 'border-gray-100 hover:border-[#33bbc5]'}
+                          ${active ? 'border-black bg-black text-white z-10 scale-105 shadow-xl' : 'border-gray-100 hover:border-[#33bbc5]'}
                           ${isSunday ? 'text-red-500' : isSaturday ? 'text-blue-500' : ''}
-                          ${isSelected && (isSunday || isSaturday) ? 'text-white' : ''}
+                          ${active && (isSunday || isSaturday) ? 'text-white' : ''}
+                          ${isToday(year, month, day) && !active ? 'ring-2 ring-[#33bbc5] ring-inset' : ''}
                         `}
                       >
                         <span className="text-sm md:text-base font-bold">{day}</span>
-                        {isAssigned && !isSelected && (
+                        {isAssigned && !active && (
                           <div className="absolute bottom-1 w-1 h-1 bg-[#33bbc5] rounded-full"></div>
                         )}
-                        {isAssigned && isSelected && (
+                        {isAssigned && active && (
                           <div className="absolute bottom-1 w-1 h-1 bg-white rounded-full"></div>
                         )}
                       </button>
@@ -224,10 +251,22 @@ export default function DuballoStandaloneManual() {
                   })}
                 </div>
                 <div className="flex justify-between items-center pt-6 border-t-2 border-black/5">
-                   <div className="text-sm font-black uppercase tracking-widest">May 2026</div>
+                   <div className="text-sm font-black uppercase tracking-widest">
+                     {viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
+                   </div>
                    <div className="flex gap-2">
-                      <button className="w-8 h-8 border-2 border-black flex items-center justify-center hover:bg-black hover:text-white transition-all"><ChevronRight size={14} className="rotate-180" /></button>
-                      <button className="w-8 h-8 border-2 border-black flex items-center justify-center hover:bg-black hover:text-white transition-all"><ChevronRight size={14} /></button>
+                      <button 
+                        onClick={() => changeMonth(-1)}
+                        className="w-8 h-8 border-2 border-black flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                      >
+                        <ChevronRight size={14} className="rotate-180" />
+                      </button>
+                      <button 
+                        onClick={() => changeMonth(1)}
+                        className="w-8 h-8 border-2 border-black flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                      >
+                        <ChevronRight size={14} />
+                      </button>
                    </div>
                 </div>
               </div>
@@ -236,7 +275,7 @@ export default function DuballoStandaloneManual() {
             {/* Right: Input Panel */}
             <div className="lg:col-span-4">
               <motion.div 
-                key={selectedDay}
+                key={formatDateKey(selectedDate)}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="bg-black text-white p-8 h-full flex flex-col"
@@ -244,14 +283,14 @@ export default function DuballoStandaloneManual() {
                 <div className="flex justify-between items-start mb-8">
                   <div>
                     <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5] mb-2">
-                      {selectedDay === new Date().getDate() ? 'Daily Assignment' : 'Historical Data'}
+                      {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? 'Daily Assignment' : 'Operational Log'}
                     </div>
                     <h3 className="text-2xl font-black uppercase tracking-tight">
-                      {selectedDay === new Date().getDate() ? 'Set Personnel' : 'View Operations'}
+                      {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? 'Set Personnel' : 'View Data'}
                     </h3>
                   </div>
                   <div className="p-2 bg-white/10 rounded-lg">
-                    {selectedDay === new Date().getDate() ? (
+                    {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? (
                       <User size={20} className="text-[#33bbc5]" />
                     ) : (
                       <FileText size={20} className="text-white/40" />
@@ -266,10 +305,10 @@ export default function DuballoStandaloneManual() {
                       type="text" 
                       value={tempManager}
                       onChange={(e) => setTempManager(e.target.value)}
-                      disabled={selectedDay !== new Date().getDate()}
-                      placeholder={selectedDay === new Date().getDate() ? "예: 이지윤 실장" : "데이터 없음"}
+                      disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
+                      placeholder={isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? "예: 이지윤 실장" : "기록된 담당자 없음"}
                       className={`w-full bg-white/5 border-b-2 p-3 font-bold outline-none transition-colors text-lg ${
-                        selectedDay === new Date().getDate() 
+                        isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())
                           ? 'border-white/20 focus:border-[#33bbc5]' 
                           : 'border-transparent text-white/40 cursor-not-allowed'
                       }`}
@@ -281,18 +320,18 @@ export default function DuballoStandaloneManual() {
                     <textarea 
                       value={tempLog}
                       onChange={(e) => setTempLog(e.target.value)}
-                      disabled={selectedDay !== new Date().getDate()}
-                      placeholder={selectedDay === new Date().getDate() ? "오늘의 업무 일지를 작성하세요..." : "기록된 업무 일지가 없습니다."}
+                      disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
+                      placeholder={isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? "오늘의 업무 일지를 작성하세요..." : "기록된 업무 일지가 없습니다."}
                       rows={6}
                       className={`w-full bg-white/5 border-2 p-4 font-bold outline-none transition-colors text-sm leading-relaxed resize-none ${
-                        selectedDay === new Date().getDate() 
+                        isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())
                           ? 'border-white/10 focus:border-[#33bbc5]' 
                           : 'border-transparent text-white/40 cursor-not-allowed'
                       }`}
                     />
                   </div>
 
-                  {selectedDay !== new Date().getDate() && (
+                  {!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
                     <div className="bg-white/5 p-4 border border-white/10 flex items-center gap-3">
                       <Clock size={16} className="text-[#33bbc5]" />
                       <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
@@ -302,7 +341,7 @@ export default function DuballoStandaloneManual() {
                   )}
                 </div>
 
-                {selectedDay === new Date().getDate() && (
+                {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
                   <div className="pt-8 flex gap-3">
                     <button 
                       onClick={handleSave}
