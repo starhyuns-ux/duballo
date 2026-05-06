@@ -243,11 +243,19 @@ export default function DuballoStandaloneManual() {
               >
                 <div className="flex justify-between items-start mb-8">
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5] mb-2">Daily Assignment</div>
-                    <h3 className="text-2xl font-black uppercase tracking-tight">Set Personnel</h3>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5] mb-2">
+                      {selectedDay === new Date().getDate() ? 'Daily Assignment' : 'Historical Data'}
+                    </div>
+                    <h3 className="text-2xl font-black uppercase tracking-tight">
+                      {selectedDay === new Date().getDate() ? 'Set Personnel' : 'View Operations'}
+                    </h3>
                   </div>
                   <div className="p-2 bg-white/10 rounded-lg">
-                    <User size={20} className="text-[#33bbc5]" />
+                    {selectedDay === new Date().getDate() ? (
+                      <User size={20} className="text-[#33bbc5]" />
+                    ) : (
+                      <FileText size={20} className="text-white/40" />
+                    )}
                   </div>
                 </div>
 
@@ -258,8 +266,13 @@ export default function DuballoStandaloneManual() {
                       type="text" 
                       value={tempManager}
                       onChange={(e) => setTempManager(e.target.value)}
-                      placeholder="예: 이지윤 실장"
-                      className="w-full bg-white/5 border-b-2 border-white/20 p-3 font-bold focus:border-[#33bbc5] outline-none transition-colors text-lg"
+                      disabled={selectedDay !== new Date().getDate()}
+                      placeholder={selectedDay === new Date().getDate() ? "예: 이지윤 실장" : "데이터 없음"}
+                      className={`w-full bg-white/5 border-b-2 p-3 font-bold outline-none transition-colors text-lg ${
+                        selectedDay === new Date().getDate() 
+                          ? 'border-white/20 focus:border-[#33bbc5]' 
+                          : 'border-transparent text-white/40 cursor-not-allowed'
+                      }`}
                     />
                   </div>
 
@@ -268,27 +281,43 @@ export default function DuballoStandaloneManual() {
                     <textarea 
                       value={tempLog}
                       onChange={(e) => setTempLog(e.target.value)}
-                      placeholder="오늘의 업무 일지를 작성하세요..."
+                      disabled={selectedDay !== new Date().getDate()}
+                      placeholder={selectedDay === new Date().getDate() ? "오늘의 업무 일지를 작성하세요..." : "기록된 업무 일지가 없습니다."}
                       rows={6}
-                      className="w-full bg-white/5 border-2 border-white/10 p-4 font-bold focus:border-[#33bbc5] outline-none transition-colors text-sm leading-relaxed resize-none"
+                      className={`w-full bg-white/5 border-2 p-4 font-bold outline-none transition-colors text-sm leading-relaxed resize-none ${
+                        selectedDay === new Date().getDate() 
+                          ? 'border-white/10 focus:border-[#33bbc5]' 
+                          : 'border-transparent text-white/40 cursor-not-allowed'
+                      }`}
                     />
                   </div>
+
+                  {selectedDay !== new Date().getDate() && (
+                    <div className="bg-white/5 p-4 border border-white/10 flex items-center gap-3">
+                      <Clock size={16} className="text-[#33bbc5]" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white/60">
+                        당일 업무 담당자만 추가/수정이 가능합니다.
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="pt-8 flex gap-3">
-                  <button 
-                    onClick={handleSave}
-                    className="flex-1 bg-[#33bbc5] text-white py-4 font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all"
-                  >
-                    <Save size={16} /> Save Entry
-                  </button>
-                  <button 
-                    onClick={handleDelete}
-                    className="w-14 bg-white/10 text-white flex items-center justify-center hover:bg-red-500 transition-all"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
+                {selectedDay === new Date().getDate() && (
+                  <div className="pt-8 flex gap-3">
+                    <button 
+                      onClick={handleSave}
+                      className="flex-1 bg-[#33bbc5] text-white py-4 font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all"
+                    >
+                      <Save size={16} /> Save Entry
+                    </button>
+                    <button 
+                      onClick={handleDelete}
+                      className="w-14 bg-white/10 text-white flex items-center justify-center hover:bg-red-500 transition-all"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                )}
               </motion.div>
             </div>
           </div>
