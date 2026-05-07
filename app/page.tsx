@@ -66,22 +66,47 @@ export default function DuballoStandaloneManual() {
   ])
 
   const [isLoading, setIsLoading] = React.useState(true)
+  const isInitialLoad = React.useRef(false)
 
   // Firebase Real-time Sync
   React.useEffect(() => {
-    // We'll use a single document 'global_data' in a collection 'ops_manual' for simplicity,
-    // or separate documents. Let's use separate for scalability but single for now to match current state.
-    const unsub = onSnapshot(doc(db, "duballo", "operational_data"), (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data()
-        if (data.assignments) setAssignments(data.assignments)
-        if (data.logs) setLogs(data.logs)
-        if (data.teamMembers) setTeamMembers(data.teamMembers)
-      }
-      setIsLoading(false)
-    })
+    // Safety timeout: Hide loading after 10s even if Firebase fails
+    const timeout = setTimeout(() => {
+      setIsLoading(prev => {
+        if (prev) console.warn("Firebase sync timed out. Data protection active.")
+        return false
+      })
+    }, 10000)
 
-    return () => unsub()
+    try {
+      const unsub = onSnapshot(
+        doc(db, "duballo", "operational_data"), 
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.data()
+            if (data.assignments) setAssignments(data.assignments)
+            if (data.logs) setLogs(data.logs)
+            if (data.teamMembers) setTeamMembers(data.teamMembers)
+          }
+          isInitialLoad.current = true // Critical: Data has been loaded from server
+          setIsLoading(false)
+          clearTimeout(timeout)
+        },
+        (error) => {
+          console.error("Firebase Sync Error Detail:", error.code, error.message)
+          setIsLoading(false)
+          clearTimeout(timeout)
+        }
+      )
+      return () => {
+        unsub()
+        clearTimeout(timeout)
+      }
+    } catch (e) {
+      console.error("Firebase Init Error:", e)
+      setIsLoading(false)
+      clearTimeout(timeout)
+    }
   }, [])
 
   // Helper to save to Firebase
@@ -93,9 +118,9 @@ export default function DuballoStandaloneManual() {
     }
   }
 
-  // Update effect
+  // Update effect - Guarded by isInitialLoad
   React.useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && isInitialLoad.current) {
       syncToFirebase({ assignments, logs, teamMembers })
     }
   }, [assignments, logs, teamMembers, isLoading])
@@ -325,7 +350,6 @@ export default function DuballoStandaloneManual() {
                         type="text" 
                         value={tempManager}
                         onChange={(e) => setTempManager(e.target.value)}
-                        disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
                         placeholder="담당자 이름..."
                         className="w-full bg-white/10 border-b-2 border-white/20 p-3 font-black text-xl focus:border-[#33bbc5] outline-none transition-colors"
                       />
@@ -336,12 +360,10 @@ export default function DuballoStandaloneManual() {
                         type="text" 
                         value={tempTime}
                         onChange={(e) => setTempTime(e.target.value)}
-                        disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
                         placeholder="09:00 - 18:00"
                         className="w-full bg-white/10 border-b-2 border-white/20 p-3 font-black text-xl focus:border-[#33bbc5] outline-none transition-colors"
                       />
                     </div>
-                    {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
                       <div className="flex gap-2 pt-2">
                         <button 
                           onClick={() => handleAddAssignment(tempManager, tempTime)}
@@ -353,7 +375,6 @@ export default function DuballoStandaloneManual() {
                           {editingId !== null ? 'Update' : 'Add Staff'}
                         </button>
                       </div>
-                    )}
                   </div>
 
                   <div className="h-[1px] bg-white/10 my-6"></div>
@@ -363,19 +384,14 @@ export default function DuballoStandaloneManual() {
                     {teamMembers.map(member => (
                       <div key={member.id}>
                         <button
-                          disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
                           onClick={() => {
-                            if (isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())) {
-                              handleAddAssignment(member.name, tempTime)
-                            } else {
-                              setTempManager(member.name)
-                            }
+                            handleAddAssignment(member.name, tempTime)
                           }}
                           className={`px-4 py-2 text-[10px] font-black transition-all border-2 ${
                             assignments[formatDateKey(selectedDate)]?.some(a => a.name === member.name)
                               ? 'bg-[#33bbc5] border-[#33bbc5] text-white' 
                               : 'bg-white/5 border-white/10 hover:border-white/40 text-white/40'
-                          } ${!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? 'cursor-not-allowed opacity-50' : ''}`}
+                          }`}
                         >
                           {member.name}
                         </button>
@@ -510,7 +526,6 @@ export default function DuballoStandaloneManual() {
                             <div className="text-[8px] font-black text-[#33bbc5] uppercase tracking-[0.2em] bg-[#33bbc5]/10 px-1.5 py-0.5 inline-block rounded-sm whitespace-nowrap">{a.time}</div>
                           </div>
                         </div>
-                        {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
                           <div className="absolute top-2 right-2 flex flex-col gap-1 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300">
                             <button 
                               onClick={() => startEditing(a)}
@@ -527,7 +542,6 @@ export default function DuballoStandaloneManual() {
                               <Trash2 size={12} strokeWidth={3} />
                             </button>
                           </div>
-                        )}
                       </div>
                     ))
                   ) : (
@@ -558,7 +572,6 @@ export default function DuballoStandaloneManual() {
                     <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none">Daily Work Log</h2>
                   </div>
                 </div>
-                {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
                   <div className="flex items-center gap-8">
                     <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#33bbc5]">
                       <div className="w-3 h-3 bg-[#33bbc5] rounded-full animate-pulse"></div>
@@ -571,7 +584,6 @@ export default function DuballoStandaloneManual() {
                       Clear Data
                     </button>
                   </div>
-                )}
               </div>
 
               <div className="relative">
@@ -580,25 +592,13 @@ export default function DuballoStandaloneManual() {
                   onChange={(e) => {
                     const val = e.target.value
                     setTempLog(val)
-                    if (isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())) {
-                      const key = formatDateKey(selectedDate)
-                      setLogs(prev => ({ ...prev, [key]: val }))
-                    }
+                    const key = formatDateKey(selectedDate)
+                    setLogs(prev => ({ ...prev, [key]: val }))
                   }}
-                  disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
                   placeholder="오늘의 상세 업무 내용을 기록하세요 (회의록, 환자 피드백, 특이사항 등)..."
                   rows={8}
-                  className={`w-full bg-gray-50 border-[6px] p-10 font-bold text-xl md:text-2xl outline-none transition-all leading-relaxed resize-none shadow-inner ${
-                    isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())
-                      ? 'border-gray-100 focus:border-black focus:bg-white' 
-                      : 'border-transparent text-gray-300 cursor-not-allowed'
-                  }`}
+                  className="w-full bg-gray-50 border-[6px] p-10 font-bold text-xl md:text-2xl outline-none transition-all leading-relaxed resize-none shadow-inner border-gray-100 focus:border-black focus:bg-white"
                 />
-                {!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[2px] pointer-events-none">
-                    <div className="bg-black text-white px-8 py-4 font-black uppercase tracking-widest text-xs">Read Only Mode</div>
-                  </div>
-                )}
               </div>
               
               <div className="mt-8 flex justify-between items-center">
