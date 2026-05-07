@@ -55,15 +55,36 @@ export default function DuballoStandaloneManual() {
   const [viewDate, setViewDate] = React.useState(new Date())
   const [selectedDate, setSelectedDate] = React.useState(new Date())
   
-  const [assignments, setAssignments] = React.useState<Record<string, string>>({
-    '2026-05-01': '이지윤 실장',
-    '2026-05-02': '박준영 매니저',
-    '2026-05-03': '이지윤 실장'
-  })
-  const [logs, setLogs] = React.useState<Record<string, string>>({
-    '2026-05-01': '오전 외래 환자 폭주로 인해 키오스크 대기 줄 발생. 안내 인력 추가 투입 검토 필요.',
-    '2026-05-02': '실손24 연계 작업 안정화 확인. 서류 누락률 5% 이하로 감소.'
-  })
+  const [assignments, setAssignments] = React.useState<Record<string, string>>({})
+  const [logs, setLogs] = React.useState<Record<string, string>>({})
+  const [teamMembers, setTeamMembers] = React.useState([
+    { id: 1, name: '이지윤 실장', role: 'Insurance Claims Specialist', title: 'Team Leader', phone: '010-1234-5678', image: '/team-1.png' },
+    { id: 2, name: '박준영 매니저', role: 'Field Support & Training', title: 'Operation Manager', phone: '010-8765-4321', image: '/team-2.png' }
+  ])
+
+  const [isLoaded, setIsLoaded] = React.useState(false)
+
+  // Load from localStorage
+  React.useEffect(() => {
+    const savedAssignments = localStorage.getItem('duballo_assignments')
+    const savedLogs = localStorage.getItem('duballo_logs')
+    const savedTeam = localStorage.getItem('duballo_team')
+    
+    if (savedAssignments) setAssignments(JSON.parse(savedAssignments))
+    if (savedLogs) setLogs(JSON.parse(savedLogs))
+    if (savedTeam) setTeamMembers(JSON.parse(savedTeam))
+    
+    setIsLoaded(true)
+  }, [])
+
+  // Save to localStorage
+  React.useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem('duballo_assignments', JSON.stringify(assignments))
+      localStorage.setItem('duballo_logs', JSON.stringify(logs))
+      localStorage.setItem('duballo_team', JSON.stringify(teamMembers))
+    }
+  }, [assignments, logs, teamMembers, isLoaded])
 
   const [tempManager, setTempManager] = React.useState('')
   const [tempLog, setTempLog] = React.useState('')
