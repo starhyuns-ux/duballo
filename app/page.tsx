@@ -455,19 +455,19 @@ export default function DuballoStandaloneManual() {
                         key={day} 
                         onClick={() => setSelectedDate(new Date(year, month, day))}
                         className={`
-                          aspect-square border-4 transition-all relative group flex flex-col items-center justify-start p-3 md:p-5
-                          ${active ? 'border-black bg-black text-white z-20 scale-105 shadow-2xl' : 'border-gray-50 hover:border-[#33bbc5]'}
+                          aspect-square border-[3px] transition-all relative group flex flex-col items-center justify-start p-2 md:p-3
+                          ${active ? 'border-black bg-black text-white z-20 scale-105 shadow-xl' : 'border-gray-50 hover:border-[#33bbc5]'}
                           ${isSunday ? 'text-red-500' : isSaturday ? 'text-blue-500' : ''}
                           ${active && (isSunday || isSaturday) ? 'text-white' : ''}
-                          ${isToday(year, month, day) && !active ? 'ring-4 ring-[#33bbc5] ring-inset' : ''}
+                          ${isToday(year, month, day) && !active ? 'ring-2 ring-[#33bbc5] ring-inset' : ''}
                         `}
                       >
-                        <span className="text-xl md:text-3xl font-black mb-auto tracking-tighter leading-none">{day}</span>
+                        <span className="text-lg md:text-2xl font-black mb-auto tracking-tighter leading-none">{day}</span>
                         
                         {assignments[dateKey]?.length > 0 && (
-                          <div className="w-full overflow-hidden flex flex-col gap-1 mt-2">
+                          <div className="w-full overflow-hidden flex flex-col gap-1 mt-1">
                             {assignments[dateKey].slice(0, 2).map(a => (
-                              <div key={a.id} className={`text-[9px] md:text-xs font-black truncate leading-tight py-1 px-2 rounded-sm ${active ? 'text-white/60 bg-white/10' : 'text-black bg-[#33bbc5] text-white shadow-sm'}`}>
+                              <div key={a.id} className={`text-[8px] md:text-[10px] font-black truncate leading-tight py-0.5 px-1.5 rounded-sm ${active ? 'text-white/60 bg-white/10' : 'text-black bg-[#33bbc5] text-white shadow-sm'}`}>
                                 {a.name}
                               </div>
                             ))}
@@ -509,71 +509,73 @@ export default function DuballoStandaloneManual() {
                 </div>
               </div>
 
-              {/* SHIFT BOARD DETAIL VIEW (REFINED PROPORTIONS) */}
+              {/* SHIFT BOARD DETAIL VIEW (COMPACT DASHBOARD STYLE) */}
               <motion.div 
                 key={`detail-${formatDateKey(selectedDate)}`}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-10 md:p-14 border-[16px] border-black bg-white shadow-[32px_32px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden"
+                className="p-8 md:p-10 border-[12px] border-black bg-white shadow-[24px_24px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#33bbc5]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+                <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#33bbc5]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
                 
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12 pb-10 border-b-[10px] border-black/5 relative z-10">
-                  <div className="flex items-center gap-10">
-                    <div className="bg-black text-white px-10 py-8 rounded-sm text-center shadow-[10px_10px_0px_0px_rgba(51,187,197,1)] hover:rotate-2 transition-transform duration-500">
-                      <div className="text-xs font-black uppercase tracking-[0.4em] opacity-40 leading-none mb-4">{selectedDate.toLocaleString('en-US', { month: 'short' })}</div>
-                      <div className="text-6xl font-black leading-none tracking-tighter">{selectedDate.getDate()}</div>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8 pb-8 border-b-[6px] border-black/5 relative z-10">
+                  <div className="flex items-center gap-8">
+                    <div className="bg-black text-white px-8 py-6 rounded-sm text-center shadow-[8px_8px_0px_0px_rgba(51,187,197,1)]">
+                      <div className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40 leading-none mb-3">{selectedDate.toLocaleString('en-US', { month: 'short' })}</div>
+                      <div className="text-4xl font-black leading-none tracking-tighter">{selectedDate.getDate()}</div>
                     </div>
                     <div className="relative">
-                      <div className="text-xs font-black uppercase tracking-[0.6em] text-[#33bbc5] mb-4">Operational Personnel</div>
-                      <h4 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter leading-none mb-2">Shift Board</h4>
-                      <div className="h-2 bg-[#33bbc5] w-32 mt-2"></div>
+                      <div className="text-[10px] font-black uppercase tracking-[0.6em] text-[#33bbc5] mb-2">Operational Personnel</div>
+                      <h4 className="text-3xl lg:text-4xl font-black uppercase tracking-tighter leading-none">Shift Board</h4>
+                      <div className="h-1.5 bg-[#33bbc5] w-20 mt-2"></div>
                     </div>
                   </div>
                   {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                    <div className="px-8 py-3 bg-[#33bbc5] text-white text-[10px] font-black tracking-[0.6em] animate-pulse rounded-full shadow-xl uppercase">
-                      Live Monitoring
+                    <div className="px-6 py-2.5 bg-[#33bbc5] text-white text-[9px] font-black tracking-[0.6em] animate-pulse rounded-full shadow-lg uppercase">
+                      Live
                     </div>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                   {assignments[formatDateKey(selectedDate)]?.length > 0 ? (
                     assignments[formatDateKey(selectedDate)].map(a => (
-                      <div key={a.id} className="p-8 bg-white border-[6px] border-black flex justify-between items-center group relative hover:translate-x-2 hover:-translate-y-2 transition-all duration-500 shadow-[15px_15px_0px_0px_rgba(0,0,0,0.03)] hover:shadow-[20px_20px_0px_0px_rgba(51,187,197,0.1)]">
+                      <div key={a.id} className="p-6 bg-white border-[4px] border-black flex justify-between items-center group relative hover:translate-x-1 hover:-translate-y-1 transition-all duration-500 shadow-[10px_10px_0px_0px_rgba(0,0,0,0.02)]">
                         {editingId === a.id && (
-                          <div className="absolute inset-0 bg-[#33bbc5]/5 border-l-[20px] border-[#33bbc5]"></div>
+                          <div className="absolute inset-0 bg-[#33bbc5]/5 border-l-[12px] border-[#33bbc5]"></div>
                         )}
-                        <div className="relative z-10 flex items-center gap-8">
-                          <div className="w-20 h-20 bg-black text-white flex items-center justify-center font-black text-4xl shadow-xl group-hover:scale-105 transition-transform duration-500">
+                        <div className="relative z-10 flex items-center gap-4 md:gap-6 flex-1 min-w-0">
+                          <div className="w-12 h-12 md:w-14 md:h-14 bg-black text-white flex items-center justify-center font-black text-xl md:text-2xl shadow-lg shrink-0">
                             {a.name.substring(0, 1)}
                           </div>
-                          <div className="whitespace-nowrap">
-                            <div className="text-4xl font-black tracking-tighter mb-2 group-hover:text-[#33bbc5] transition-colors">{a.name}</div>
-                            <div className="text-[10px] font-black text-[#33bbc5] uppercase tracking-[0.4em] bg-[#33bbc5]/10 px-3 py-1.5 inline-block rounded-sm">{a.time}</div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xl md:text-2xl font-black tracking-tighter mb-1 group-hover:text-[#33bbc5] transition-colors truncate">{a.name}</div>
+                            <div className="text-[8px] md:text-[9px] font-black text-[#33bbc5] uppercase tracking-[0.2em] bg-[#33bbc5]/10 px-2 py-1 inline-block rounded-sm truncate max-w-full">{a.time}</div>
                           </div>
                         </div>
                         {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                          <div className="flex flex-col gap-3 relative z-10 opacity-10 group-hover:opacity-100 transition-all duration-500">
+                          <div className="flex gap-1.5 md:gap-2 relative z-10 shrink-0 ml-4 opacity-10 group-hover:opacity-100 transition-all duration-500">
                             <button 
                               onClick={() => startEditing(a)}
-                              className={`p-4 border-[4px] border-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#33bbc5] hover:border-[#33bbc5] hover:text-white hover:shadow-none hover:translate-x-1 hover:translate-y-1 ${editingId === a.id ? 'bg-black text-white shadow-none translate-x-1 translate-y-1' : 'bg-white'}`}
+                              className={`p-2 md:p-2.5 border-[2px] md:border-[3px] border-black transition-all ${editingId === a.id ? 'bg-black text-white' : 'bg-white hover:bg-black hover:text-white'}`}
+                              title="Edit"
                             >
-                              <Edit2 size={24} strokeWidth={3} />
+                              <Edit2 size={16} strokeWidth={3} />
                             </button>
                             <button 
                               onClick={() => removeAssignment(formatDateKey(selectedDate), a.id)}
-                              className="p-4 bg-white border-[4px] border-black text-gray-200 hover:text-red-500 hover:border-red-500 transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+                              className="p-2 md:p-2.5 bg-white border-[2px] md:border-[3px] border-black text-gray-300 hover:text-red-500 hover:border-red-500 transition-all"
+                              title="Delete"
                             >
-                              <Trash2 size={24} strokeWidth={3} />
+                              <Trash2 size={16} strokeWidth={3} />
                             </button>
                           </div>
                         )}
                       </div>
                     ))
                   ) : (
-                    <div className="col-span-full py-24 text-center bg-gray-50 border-[8px] border-dashed border-black/5 rounded-2xl">
-                      <div className="text-xl font-black uppercase tracking-[1em] text-black/10">Archive Empty</div>
+                    <div className="col-span-full py-16 text-center bg-gray-50 border-[6px] border-dashed border-black/5 rounded-xl">
+                      <div className="text-sm font-black uppercase tracking-[0.8em] text-black/10">Archive Empty</div>
                     </div>
                   )}
                 </div>
