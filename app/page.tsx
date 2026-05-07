@@ -152,10 +152,16 @@ export default function DuballoStandaloneManual() {
     }))
   }
 
-  const handleSave = () => {
+  const clearDayData = () => {
     const key = formatDateKey(selectedDate)
-    // Legacy handleSave now only handles logs if needed, but we have auto-save
-    setLogs(prev => ({ ...prev, [key]: tempLog }))
+    const newAssignments = { ...assignments }
+    const newLogs = { ...logs }
+    delete newAssignments[key]
+    delete newLogs[key]
+    setAssignments(newAssignments)
+    setLogs(newLogs)
+    setTempManager('')
+    setTempLog('')
   }
 
   const handleDelete = () => {
@@ -227,11 +233,11 @@ export default function DuballoStandaloneManual() {
                   className="bg-black text-white px-8 py-4 rounded-sm flex flex-col gap-3 shadow-2xl border-l-8 border-[#33bbc5]"
                 >
                   <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#33bbc5]">오늘의 담당자 ({assignments[formatDateKey(new Date())].length})</span>
-                  <div className="flex flex-wrap gap-6">
+                  <div className="flex flex-wrap gap-x-8 gap-y-2">
                     {assignments[formatDateKey(new Date())].map(a => (
-                      <div key={a.id} className="flex flex-col">
+                      <div key={a.id} className="flex items-baseline gap-2 whitespace-nowrap">
                         <span className="text-xl font-black">{a.name}</span>
-                        <span className="text-[9px] font-bold opacity-60 tracking-tighter">{a.time}</span>
+                        <span className="text-[10px] font-bold opacity-50 tracking-tight">{a.time}</span>
                       </div>
                     ))}
                   </div>
@@ -391,9 +397,11 @@ export default function DuballoStandaloneManual() {
                           {editingId === a.id && (
                             <div className="absolute inset-0 bg-[#33bbc5]/10 border-l-4 border-[#33bbc5]"></div>
                           )}
-                          <div className="relative z-10">
-                            <div className="text-lg font-black">{a.name}</div>
-                            <div className="text-[10px] font-bold text-black/40">{a.time}</div>
+                          <div className="relative z-10 whitespace-nowrap overflow-hidden">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-lg font-black">{a.name}</span>
+                              <span className="text-[10px] font-bold text-black/30">{a.time}</span>
+                            </div>
                           </div>
                           {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
                             <div className="flex items-center gap-1 relative z-10">
@@ -495,24 +503,34 @@ export default function DuballoStandaloneManual() {
                     <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">Select to Add Staff</label>
                     <div className="flex flex-wrap gap-2">
                       {teamMembers.map(member => (
-                        <button
-                          key={member.id}
-                          disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
-                          onClick={() => {
-                            if (isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())) {
-                              handleAddAssignment(member.name, tempTime)
-                            } else {
-                              setTempManager(member.name)
-                            }
-                          }}
-                          className={`px-3 py-2 text-xs font-bold transition-all border ${
-                            assignments[formatDateKey(selectedDate)]?.some(a => a.name === member.name)
-                              ? 'bg-[#33bbc5] border-[#33bbc5] text-white' 
-                              : 'bg-white/5 border-white/10 hover:border-white/30 text-white/40'
-                          } ${!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? 'cursor-not-allowed opacity-50' : ''}`}
-                        >
-                          {member.name}
-                        </button>
+                        <div key={member.id} className="group relative">
+                          <button
+                            disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
+                            onClick={() => {
+                              if (isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())) {
+                                handleAddAssignment(member.name, tempTime)
+                              } else {
+                                setTempManager(member.name)
+                              }
+                            }}
+                            className={`px-3 py-2 text-xs font-bold transition-all border ${
+                              assignments[formatDateKey(selectedDate)]?.some(a => a.name === member.name)
+                                ? 'bg-[#33bbc5] border-[#33bbc5] text-white' 
+                                : 'bg-white/5 border-white/10 hover:border-white/30 text-white/40'
+                            } ${!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? 'cursor-not-allowed opacity-50' : ''}`}
+                          >
+                            {member.name}
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setTeamMembers(prev => prev.filter(m => m.id !== member.id))
+                            }}
+                            className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-[8px]"
+                          >
+                            ×
+                          </button>
+                        </div>
                       ))}
                     </div>
 
@@ -539,6 +557,25 @@ export default function DuballoStandaloneManual() {
                   </div>
 
                   <div className="space-y-4">
+                    {/* Quick Log Templates */}
+                    {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {['정상 운영', '장비 점검 완료', '특이사항 없음', '환자 응대 집중'].map(template => (
+                          <button
+                            key={template}
+                            onClick={() => {
+                              const newLog = tempLog ? `${tempLog}\n${template}` : template
+                              setTempLog(newLog)
+                              setLogs(prev => ({ ...prev, [formatDateKey(selectedDate)]: newLog }))
+                            }}
+                            className="px-2 py-1 bg-gray-100 text-[9px] font-black uppercase tracking-tight hover:bg-black hover:text-white transition-all border border-black/5"
+                          >
+                            + {template}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
                     <textarea 
                       value={tempLog}
                       onChange={(e) => {
@@ -566,10 +603,10 @@ export default function DuballoStandaloneManual() {
                           Auto-saving...
                         </div>
                         <button 
-                          onClick={handleDelete}
-                          className="text-gray-300 hover:text-red-500 transition-colors"
+                          onClick={clearDayData}
+                          className="flex items-center gap-1 text-red-500 hover:bg-red-50 text-[9px] px-2 py-1 rounded transition-colors"
                         >
-                          Clear Log
+                          <Trash2 size={12} /> Clear All for Today
                         </button>
                       </div>
                     ) : (
