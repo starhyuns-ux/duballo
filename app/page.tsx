@@ -162,9 +162,19 @@ export default function DuballoStandaloneManual() {
               <span className="font-serif italic text-3xl md:text-4xl lg:text-6xl text-[#33bbc5] block mb-4 md:mb-6">
                 hello duballo
               </span>
-              <div className="text-[10px] md:text-sm font-mono font-bold uppercase tracking-widest opacity-40">
+              <div className="text-[10px] md:text-sm font-mono font-bold uppercase tracking-widest opacity-40 mb-4">
                 New Collection / Spring 2026
               </div>
+              {assignments[formatDateKey(new Date())] && (
+                <motion.div 
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="bg-black text-white px-6 py-3 rounded-sm flex items-center gap-3"
+                >
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5]">오늘의 담당자</span>
+                  <span className="text-lg font-black">{assignments[formatDateKey(new Date())]}</span>
+                </motion.div>
+              )}
             </div>
           </motion.div>
 
@@ -422,103 +432,6 @@ export default function DuballoStandaloneManual() {
           </div>
         </div>
       </section>
-
-      {/* 08-B. OUR PERSONNEL */}
-        <section className="mb-32 md:mb-64">
-           <SectionLabel number="08-B" text="The Personnel" />
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-              {teamMembers.map(member => (
-                <motion.div 
-                  layout
-                  key={member.id} 
-                  className="group"
-                >
-                  <div className="aspect-[3/4] bg-gray-100 mb-8 overflow-hidden relative">
-                    <img 
-                      src={member.image} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
-                    />
-                    <div className="absolute inset-0 bg-[#33bbc5]/20 mix-blend-multiply opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <button 
-                      onClick={() => setTeamMembers(prev => prev.filter(m => m.id !== member.id))}
-                      className="absolute top-4 right-4 w-10 h-10 bg-black text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500"
-                    >
-                      <XCircle size={20} />
-                    </button>
-                  </div>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5] mb-2">{member.title}</div>
-                  <h3 className="text-3xl font-black uppercase tracking-tighter mb-4">{member.name}</h3>
-                  <p className="text-sm font-bold text-gray-500 mb-6 uppercase">{member.role}</p>
-                  <div className="h-[2px] w-12 bg-black mb-6"></div>
-                  <div className="text-lg font-black tracking-tight">{member.phone}</div>
-                </motion.div>
-              ))}
-
-              {isAddingMember ? (
-                <motion.form 
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  onSubmit={handleAddMember}
-                  className="p-8 border-4 border-black flex flex-col gap-6"
-                >
-                  <div className="text-2xl font-black uppercase tracking-tight mb-4">New Personnel</div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">성명</label>
-                      <input 
-                        required
-                        type="text" 
-                        value={newMember.name}
-                        onChange={e => setNewMember({...newMember, name: e.target.value})}
-                        className="w-full border-b-2 border-black p-2 font-bold focus:border-[#33bbc5] outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">직책 (예: Team Leader)</label>
-                      <input 
-                        type="text" 
-                        value={newMember.title}
-                        onChange={e => setNewMember({...newMember, title: e.target.value})}
-                        className="w-full border-b-2 border-black p-2 font-bold focus:border-[#33bbc5] outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">업무명 (예: Insurance Specialist)</label>
-                      <input 
-                        type="text" 
-                        value={newMember.role}
-                        onChange={e => setNewMember({...newMember, role: e.target.value})}
-                        className="w-full border-b-2 border-black p-2 font-bold focus:border-[#33bbc5] outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">연락처</label>
-                      <input 
-                        type="text" 
-                        value={newMember.phone}
-                        onChange={e => setNewMember({...newMember, phone: e.target.value})}
-                        className="w-full border-b-2 border-black p-2 font-bold focus:border-[#33bbc5] outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <button type="submit" className="flex-1 bg-black text-white py-3 font-black uppercase text-xs tracking-widest hover:bg-[#33bbc5] transition-all">Register</button>
-                    <button type="button" onClick={() => setIsAddingMember(false)} className="px-4 border-2 border-black font-black uppercase text-xs hover:bg-gray-100 transition-all">Cancel</button>
-                  </div>
-                </motion.form>
-              ) : (
-                <div 
-                  onClick={() => setIsAddingMember(true)}
-                  className="flex flex-col justify-end p-8 border-4 border-black border-dashed opacity-30 hover:opacity-100 transition-opacity cursor-pointer group min-h-[400px]"
-                >
-                  <div className="text-5xl font-black mb-8 group-hover:scale-125 transition-transform">+</div>
-                  <div className="text-sm font-black uppercase tracking-[0.3em]">Join the Team</div>
-                  <p className="text-xs font-bold mt-4 uppercase">신규 담당자 등록하기</p>
-                </div>
-              )}
-           </div>
-        </section>
 
       {/* MAIN CONTENT CONTAINER */}
       <div className="max-w-7xl mx-auto px-6 lg:px-20 pt-24 md:pt-52">
