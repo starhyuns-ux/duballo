@@ -55,7 +55,7 @@ export default function DuballoStandaloneManual() {
   const [viewDate, setViewDate] = React.useState(new Date())
   const [selectedDate, setSelectedDate] = React.useState(new Date())
   
-  const [assignments, setAssignments] = React.useState<Record<string, { name: string, time: string }>>({})
+  const [assignments, setAssignments] = React.useState<Record<string, { id: number, name: string, time: string }[]>>({})
   const [logs, setLogs] = React.useState<Record<string, string>>({})
   const [teamMembers, setTeamMembers] = React.useState([
     { id: 1, name: '이지윤 실장', role: 'Insurance Claims Specialist', title: 'Team Leader', phone: '010-1234-5678', image: '/team-1.png' },
@@ -96,20 +96,30 @@ export default function DuballoStandaloneManual() {
 
   React.useEffect(() => {
     const key = formatDateKey(selectedDate)
-    const assignment = assignments[key] || { name: '', time: '09:00 - 18:00' }
-    setTempManager(assignment.name)
-    setTempTime(assignment.time)
     setTempLog(logs[key] || '')
-  }, [selectedDate, assignments, logs])
+    // We don't clear tempManager/tempTime automatically to allow quick multiple adds
+  }, [selectedDate, logs])
 
-  const handleSaveAssignment = (name: string, time: string) => {
+  const handleAddAssignment = (name: string, time: string) => {
+    if (!name) return
     const key = formatDateKey(selectedDate)
-    setAssignments(prev => ({ ...prev, [key]: { name, time } }))
+    const newAssignment = { id: Date.now(), name, time }
+    setAssignments(prev => ({
+      ...prev,
+      [key]: [...(prev[key] || []), newAssignment]
+    }))
+  }
+
+  const removeAssignment = (dateKey: string, id: number) => {
+    setAssignments(prev => ({
+      ...prev,
+      [dateKey]: (prev[dateKey] || []).filter(a => a.id !== id)
+    }))
   }
 
   const handleSave = () => {
     const key = formatDateKey(selectedDate)
-    setAssignments(prev => ({ ...prev, [key]: { name: tempManager, time: tempTime } }))
+    // Legacy handleSave now only handles logs if needed, but we have auto-save
     setLogs(prev => ({ ...prev, [key]: tempLog }))
   }
 
@@ -175,18 +185,21 @@ export default function DuballoStandaloneManual() {
               <div className="text-[10px] md:text-sm font-mono font-bold uppercase tracking-widest opacity-40 mb-4">
                 New Collection / Spring 2026
               </div>
-              {assignments[formatDateKey(new Date())] && (
+              {assignments[formatDateKey(new Date())]?.length > 0 && (
                 <motion.div 
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-black text-white px-8 py-4 rounded-sm flex items-center gap-4 shadow-2xl border-l-8 border-[#33bbc5]"
+                  className="bg-black text-white px-8 py-4 rounded-sm flex flex-col gap-3 shadow-2xl border-l-8 border-[#33bbc5]"
                 >
-                  <div className="flex flex-col items-start">
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#33bbc5]">오늘의 담당자</span>
-                    <span className="text-2xl font-black">{assignments[formatDateKey(new Date())]?.name}</span>
-                    <span className="text-[10px] font-bold opacity-60">{assignments[formatDateKey(new Date())]?.time}</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#33bbc5]">오늘의 담당자 ({assignments[formatDateKey(new Date())].length})</span>
+                  <div className="flex flex-wrap gap-6">
+                    {assignments[formatDateKey(new Date())].map(a => (
+                      <div key={a.id} className="flex flex-col">
+                        <span className="text-xl font-black">{a.name}</span>
+                        <span className="text-[9px] font-bold opacity-60 tracking-tighter">{a.time}</span>
+                      </div>
+                    ))}
                   </div>
-                  <CheckCircle2 size={24} className="text-[#33bbc5] ml-4" />
                 </motion.div>
               )}
             </div>
@@ -318,31 +331,48 @@ export default function DuballoStandaloneManual() {
                   key={`detail-${formatDateKey(selectedDate)}`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-6 p-6 border-2 border-black bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-6"
+                  className="mt-6 p-6 border-2 border-black bg-gray-50 flex flex-col gap-6"
                 >
-                  <div className="flex items-center gap-6">
-                    <div className="w-12 h-12 bg-black text-white flex flex-col items-center justify-center rounded-sm">
-                      <span className="text-[10px] font-black uppercase leading-none mb-1">{selectedDate.toLocaleString('en-US', { month: 'short' })}</span>
-                      <span className="text-xl font-black leading-none">{selectedDate.getDate()}</span>
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5] mb-1">Assigned Personnel</div>
-                      <div className="text-xl font-black uppercase">
-                        {assignments[formatDateKey(selectedDate)]?.name || 'No Assignment'}
+                  <div className="flex justify-between items-center pb-4 border-b border-black/5">
+                    <div className="flex items-center gap-6">
+                      <div className="w-12 h-12 bg-black text-white flex flex-col items-center justify-center rounded-sm">
+                        <span className="text-[10px] font-black uppercase leading-none mb-1">{selectedDate.toLocaleString('en-US', { month: 'short' })}</span>
+                        <span className="text-xl font-black leading-none">{selectedDate.getDate()}</span>
                       </div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5]">Daily Shift Summary</div>
                     </div>
+                    {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
+                       <div className="flex items-center gap-2 text-[10px] font-black text-[#33bbc5]">
+                         <div className="w-2 h-2 bg-[#33bbc5] rounded-full animate-ping"></div>
+                         LIVE TODAY
+                       </div>
+                    )}
                   </div>
-                  {assignments[formatDateKey(selectedDate)] && (
-                    <div className="flex items-center gap-4 border-l-2 border-black/10 pl-6 h-full">
-                      <div className="text-right">
-                        <div className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-1">Shift Time</div>
-                        <div className="text-sm font-bold uppercase tracking-tight">
-                          {assignments[formatDateKey(selectedDate)]?.time}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {assignments[formatDateKey(selectedDate)]?.length > 0 ? (
+                      assignments[formatDateKey(selectedDate)].map(a => (
+                        <div key={a.id} className="p-4 bg-white border border-black/10 flex justify-between items-center group">
+                          <div>
+                            <div className="text-lg font-black">{a.name}</div>
+                            <div className="text-[10px] font-bold text-black/40">{a.time}</div>
+                          </div>
+                          {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
+                            <button 
+                              onClick={() => removeAssignment(formatDateKey(selectedDate), a.id)}
+                              className="w-8 h-8 flex items-center justify-center text-gray-200 hover:text-red-500 transition-colors"
+                            >
+                              <XCircle size={16} />
+                            </button>
+                          )}
                         </div>
+                      ))
+                    ) : (
+                      <div className="col-span-full py-8 text-center text-gray-300 font-bold uppercase tracking-widest text-xs">
+                        No Staff Assigned for this Date
                       </div>
-                      <Clock size={20} className="text-[#33bbc5]" />
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </motion.div>
               </div>
             </div>
@@ -388,10 +418,10 @@ export default function DuballoStandaloneManual() {
                       </div>
                       {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
                         <button 
-                          onClick={() => handleSaveAssignment(tempManager, tempTime)}
-                          className="w-full bg-[#33bbc5] py-3 font-black uppercase text-[10px] tracking-widest hover:bg-white hover:text-black transition-all"
+                          onClick={() => handleAddAssignment(tempManager, tempTime)}
+                          className="w-full bg-[#33bbc5] py-3 font-black uppercase text-[10px] tracking-widest hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
                         >
-                          Confirm Assignment
+                          <Plus size={14} /> Add to Shift
                         </button>
                       )}
                     </div>
@@ -399,20 +429,21 @@ export default function DuballoStandaloneManual() {
                     <div className="h-[1px] bg-white/10 my-4"></div>
 
                     {/* Selection List - Simplified */}
-                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">Quick Select Staff</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">Select to Add Staff</label>
                     <div className="flex flex-wrap gap-2">
                       {teamMembers.map(member => (
                         <button
                           key={member.id}
                           disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
                           onClick={() => {
-                            setTempManager(member.name)
                             if (isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())) {
-                              handleSaveAssignment(member.name, tempTime)
+                              handleAddAssignment(member.name, tempTime)
+                            } else {
+                              setTempManager(member.name)
                             }
                           }}
                           className={`px-3 py-2 text-xs font-bold transition-all border ${
-                            tempManager === member.name 
+                            assignments[formatDateKey(selectedDate)]?.some(a => a.name === member.name)
                               ? 'bg-[#33bbc5] border-[#33bbc5] text-white' 
                               : 'bg-white/5 border-white/10 hover:border-white/30 text-white/40'
                           } ${!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? 'cursor-not-allowed opacity-50' : ''}`}
