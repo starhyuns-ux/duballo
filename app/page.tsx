@@ -103,6 +103,7 @@ export default function DuballoStandaloneManual() {
   const [tempManager, setTempManager] = React.useState('')
   const [tempTime, setTempTime] = React.useState('09:00 - 18:00')
   const [tempLog, setTempLog] = React.useState('')
+  const [editingId, setEditingId] = React.useState<number | null>(null)
 
   const formatDateKey = (date: Date) => {
     return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`
@@ -117,11 +118,30 @@ export default function DuballoStandaloneManual() {
   const handleAddAssignment = (name: string, time: string) => {
     if (!name) return
     const key = formatDateKey(selectedDate)
-    const newAssignment = { id: Date.now(), name, time }
-    setAssignments(prev => ({
-      ...prev,
-      [key]: [...(prev[key] || []), newAssignment]
-    }))
+    
+    if (editingId !== null) {
+      // Update existing
+      setAssignments(prev => ({
+        ...prev,
+        [key]: (prev[key] || []).map(a => a.id === editingId ? { ...a, name, time } : a)
+      }))
+      setEditingId(null)
+    } else {
+      // Add new
+      const newAssignment = { id: Date.now(), name, time }
+      setAssignments(prev => ({
+        ...prev,
+        [key]: [...(prev[key] || []), newAssignment]
+      }))
+    }
+    setTempManager('')
+  }
+
+  const startEditing = (assignment: { id: number, name: string, time: string }) => {
+    setEditingId(assignment.id)
+    setTempManager(assignment.name)
+    setTempTime(assignment.time)
+    // Scroll to input if needed, or just let the user see the change in button text
   }
 
   const removeAssignment = (dateKey: string, id: number) => {
@@ -366,18 +386,29 @@ export default function DuballoStandaloneManual() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {assignments[formatDateKey(selectedDate)]?.length > 0 ? (
                       assignments[formatDateKey(selectedDate)].map(a => (
-                        <div key={a.id} className="p-4 bg-white border border-black/10 flex justify-between items-center group">
-                          <div>
+                        <div key={a.id} className="p-4 bg-white border border-black/10 flex justify-between items-center group relative overflow-hidden">
+                          {editingId === a.id && (
+                            <div className="absolute inset-0 bg-[#33bbc5]/10 border-l-4 border-[#33bbc5]"></div>
+                          )}
+                          <div className="relative z-10">
                             <div className="text-lg font-black">{a.name}</div>
                             <div className="text-[10px] font-bold text-black/40">{a.time}</div>
                           </div>
                           {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                            <button 
-                              onClick={() => removeAssignment(formatDateKey(selectedDate), a.id)}
-                              className="w-8 h-8 flex items-center justify-center text-gray-200 hover:text-red-500 transition-colors"
-                            >
-                              <XCircle size={16} />
-                            </button>
+                            <div className="flex items-center gap-1 relative z-10">
+                              <button 
+                                onClick={() => startEditing(a)}
+                                className={`w-8 h-8 flex items-center justify-center transition-colors ${editingId === a.id ? 'text-[#33bbc5]' : 'text-gray-200 hover:text-black'}`}
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                              <button 
+                                onClick={() => removeAssignment(formatDateKey(selectedDate), a.id)}
+                                className="w-8 h-8 flex items-center justify-center text-gray-200 hover:text-red-500 transition-colors"
+                              >
+                                <XCircle size={16} />
+                              </button>
+                            </div>
                           )}
                         </div>
                       ))
@@ -431,12 +462,29 @@ export default function DuballoStandaloneManual() {
                         />
                       </div>
                       {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                        <button 
-                          onClick={() => handleAddAssignment(tempManager, tempTime)}
-                          className="w-full bg-[#33bbc5] py-3 font-black uppercase text-[10px] tracking-widest hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2"
-                        >
-                          <Plus size={14} /> Add to Shift
-                        </button>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => handleAddAssignment(tempManager, tempTime)}
+                            className={`flex-1 py-3 font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 ${
+                              editingId !== null ? 'bg-black text-white hover:bg-[#33bbc5]' : 'bg-[#33bbc5] text-white hover:bg-black'
+                            }`}
+                          >
+                            {editingId !== null ? <Save size={14} /> : <Plus size={14} />}
+                            {editingId !== null ? 'Update Entry' : 'Add to Shift'}
+                          </button>
+                          {editingId !== null && (
+                            <button 
+                              onClick={() => {
+                                setEditingId(null)
+                                setTempManager('')
+                                setTempTime('09:00 - 18:00')
+                              }}
+                              className="px-4 border-2 border-black font-black uppercase text-[10px] hover:bg-gray-100"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
                       )}
                     </div>
 
