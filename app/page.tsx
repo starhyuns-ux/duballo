@@ -133,25 +133,6 @@ export default function DuballoStandaloneManual() {
     return selectedDate.getFullYear() === year && selectedDate.getMonth() === month && selectedDate.getDate() === day
   }
 
-  const [teamMembers, setTeamMembers] = React.useState([
-    { id: 1, name: '이지윤 실장', role: 'Insurance Claims Specialist', title: 'Team Leader', phone: '010-1234-5678', image: '/team-1.png' },
-    { id: 2, name: '박준영 매니저', role: 'Field Support & Training', title: 'Operation Manager', phone: '010-8765-4321', image: '/team-2.png' }
-  ])
-
-  const [isAddingMember, setIsAddingMember] = React.useState(false)
-  const [newMember, setNewMember] = React.useState({ name: '', role: '', title: '', phone: '' })
-
-  const handleAddMember = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newMember.name) return
-    setTeamMembers(prev => [
-      ...prev, 
-      { id: Date.now(), ...newMember, image: '/team-1.png' } // Using placeholder image for new members
-    ])
-    setNewMember({ name: '', role: '', title: '', phone: '' })
-    setIsAddingMember(false)
-  }
-
   return (
     <div className="bg-white min-h-screen font-sans selection:bg-[#33bbc5] selection:text-white pb-40 md:pb-80">
       {/* 00. HERO SECTION - RESPONSIVE OPTIMIZED */}
