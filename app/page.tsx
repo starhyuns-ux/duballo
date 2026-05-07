@@ -70,7 +70,21 @@ export default function DuballoStandaloneManual() {
     const savedLogs = localStorage.getItem('duballo_logs')
     const savedTeam = localStorage.getItem('duballo_team')
     
-    if (savedAssignments) setAssignments(JSON.parse(savedAssignments))
+    if (savedAssignments) {
+      const parsed = JSON.parse(savedAssignments)
+      // Migration: Ensure all values are arrays
+      const migrated: Record<string, { id: number, name: string, time: string }[]> = {}
+      Object.keys(parsed).forEach(key => {
+        if (Array.isArray(parsed[key])) {
+          migrated[key] = parsed[key]
+        } else if (typeof parsed[key] === 'string') {
+          migrated[key] = [{ id: Date.now(), name: parsed[key], time: '09:00 - 18:00' }]
+        } else if (parsed[key] && typeof parsed[key] === 'object') {
+          migrated[key] = [{ id: Date.now(), name: parsed[key].name || 'Unknown', time: parsed[key].time || '09:00 - 18:00' }]
+        }
+      })
+      setAssignments(migrated)
+    }
     if (savedLogs) setLogs(JSON.parse(savedLogs))
     if (savedTeam) setTeamMembers(JSON.parse(savedTeam))
     
