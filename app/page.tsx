@@ -19,7 +19,8 @@ import {
   User,
   Plus,
   Save,
-  Trash2
+  Trash2,
+  Edit2
 } from 'lucide-react'
 
 const SectionLabel = ({ text, number }: { text: string, number: string }) => (
