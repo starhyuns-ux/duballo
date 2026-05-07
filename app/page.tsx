@@ -22,6 +22,8 @@ import {
   Trash2,
   Edit2
 } from 'lucide-react'
+import { db } from '../lib/firebase'
+import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 
 const SectionLabel = ({ text, number }: { text: string, number: string }) => (
   <div className="flex items-center gap-4 md:gap-8 mb-12 md:mb-16">
@@ -63,43 +65,40 @@ export default function DuballoStandaloneManual() {
     { id: 2, name: '박준영 매니저', role: 'Field Support & Training', title: 'Operation Manager', phone: '010-8765-4321', image: '/team-2.png' }
   ])
 
-  const [isLoaded, setIsLoaded] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(true)
 
-  // Load from localStorage
+  // Firebase Real-time Sync
   React.useEffect(() => {
-    const savedAssignments = localStorage.getItem('duballo_assignments')
-    const savedLogs = localStorage.getItem('duballo_logs')
-    const savedTeam = localStorage.getItem('duballo_team')
-    
-    if (savedAssignments) {
-      const parsed = JSON.parse(savedAssignments)
-      // Migration: Ensure all values are arrays
-      const migrated: Record<string, { id: number, name: string, time: string }[]> = {}
-      Object.keys(parsed).forEach(key => {
-        if (Array.isArray(parsed[key])) {
-          migrated[key] = parsed[key]
-        } else if (typeof parsed[key] === 'string') {
-          migrated[key] = [{ id: Date.now(), name: parsed[key], time: '09:00 - 18:00' }]
-        } else if (parsed[key] && typeof parsed[key] === 'object') {
-          migrated[key] = [{ id: Date.now(), name: parsed[key].name || 'Unknown', time: parsed[key].time || '09:00 - 18:00' }]
-        }
-      })
-      setAssignments(migrated)
-    }
-    if (savedLogs) setLogs(JSON.parse(savedLogs))
-    if (savedTeam) setTeamMembers(JSON.parse(savedTeam))
-    
-    setIsLoaded(true)
+    // We'll use a single document 'global_data' in a collection 'ops_manual' for simplicity,
+    // or separate documents. Let's use separate for scalability but single for now to match current state.
+    const unsub = onSnapshot(doc(db, "duballo", "operational_data"), (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data()
+        if (data.assignments) setAssignments(data.assignments)
+        if (data.logs) setLogs(data.logs)
+        if (data.teamMembers) setTeamMembers(data.teamMembers)
+      }
+      setIsLoading(false)
+    })
+
+    return () => unsub()
   }, [])
 
-  // Save to localStorage
-  React.useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem('duballo_assignments', JSON.stringify(assignments))
-      localStorage.setItem('duballo_logs', JSON.stringify(logs))
-      localStorage.setItem('duballo_team', JSON.stringify(teamMembers))
+  // Helper to save to Firebase
+  const syncToFirebase = async (newData: any) => {
+    try {
+      await setDoc(doc(db, "duballo", "operational_data"), newData, { merge: true })
+    } catch (error) {
+      console.error("Firebase Sync Error:", error)
     }
-  }, [assignments, logs, teamMembers, isLoaded])
+  }
+
+  // Update effect
+  React.useEffect(() => {
+    if (!isLoading) {
+      syncToFirebase({ assignments, logs, teamMembers })
+    }
+  }, [assignments, logs, teamMembers, isLoading])
 
   const [tempManager, setTempManager] = React.useState('')
   const [tempTime, setTempTime] = React.useState('09:00 - 18:00')
@@ -194,6 +193,12 @@ export default function DuballoStandaloneManual() {
 
   return (
     <div className="bg-white min-h-screen font-sans selection:bg-[#33bbc5] selection:text-white pb-40 md:pb-80">
+      {isLoading && (
+        <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center">
+          <div className="w-20 h-20 border-[8px] border-gray-100 border-t-[#33bbc5] rounded-full animate-spin mb-8"></div>
+          <div className="text-xl font-black uppercase tracking-[0.5em] animate-pulse">Syncing Duballo Ops...</div>
+        </div>
+      )}
       {/* 00. HERO SECTION - RESPONSIVE OPTIMIZED */}
       <section className="relative pt-20 md:pt-32 pb-24 md:pb-48 px-6 lg:px-20 border-b-2 md:border-b-4 border-black">
         <div className="max-w-7xl mx-auto relative">
