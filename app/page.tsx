@@ -167,12 +167,15 @@ export default function DuballoStandaloneManual() {
               </div>
               {assignments[formatDateKey(new Date())] && (
                 <motion.div 
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="bg-black text-white px-6 py-3 rounded-sm flex items-center gap-3"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-black text-white px-8 py-4 rounded-sm flex items-center gap-4 shadow-2xl border-l-8 border-[#33bbc5]"
                 >
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5]">오늘의 담당자</span>
-                  <span className="text-lg font-black">{assignments[formatDateKey(new Date())]}</span>
+                  <div className="flex flex-col items-start">
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#33bbc5]">오늘의 담당자</span>
+                    <span className="text-2xl font-black">{assignments[formatDateKey(new Date())]}</span>
+                  </div>
+                  <CheckCircle2 size={24} className="text-[#33bbc5] ml-4" />
                 </motion.div>
               )}
             </div>
@@ -392,9 +395,16 @@ export default function DuballoStandaloneManual() {
                   <div className="space-y-4">
                     <textarea 
                       value={tempLog}
-                      onChange={(e) => setTempLog(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        setTempLog(val)
+                        if (isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())) {
+                          const key = formatDateKey(selectedDate)
+                          setLogs(prev => ({ ...prev, [key]: val }))
+                        }
+                      }}
                       disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
-                      placeholder={isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? "오늘의 업무 일지를 작성하세요..." : "기록된 업무 일지가 없습니다."}
+                      placeholder={isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? "오늘의 업무 일지를 작성하세요 (입력 시 자동 저장)..." : "기록된 업무 일지가 없습니다."}
                       rows={5}
                       className={`w-full bg-gray-50 border-2 p-4 font-bold outline-none transition-colors text-sm leading-relaxed resize-none ${
                         isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())
@@ -404,18 +414,16 @@ export default function DuballoStandaloneManual() {
                     />
 
                     {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) ? (
-                      <div className="flex gap-2">
-                        <button 
-                          onClick={handleSave}
-                          className="flex-1 bg-black text-white py-3 font-black uppercase tracking-widest text-[10px] hover:bg-[#33bbc5] transition-all"
-                        >
-                          <Save size={14} className="inline mr-2" /> Save Log
-                        </button>
+                      <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#33bbc5]">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-[#33bbc5] rounded-full animate-pulse"></div>
+                          Auto-saving...
+                        </div>
                         <button 
                           onClick={handleDelete}
-                          className="px-4 bg-gray-100 text-black hover:bg-red-500 hover:text-white transition-all"
+                          className="text-gray-300 hover:text-red-500 transition-colors"
                         >
-                          <Trash2 size={14} />
+                          Clear Log
                         </button>
                       </div>
                     ) : (
