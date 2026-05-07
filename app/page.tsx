@@ -329,19 +329,26 @@ export default function DuballoStandaloneManual() {
                         key={day} 
                         onClick={() => setSelectedDate(new Date(year, month, day))}
                         className={`
-                          aspect-square border-2 transition-all relative group flex flex-col items-center justify-center
+                          aspect-square border-2 transition-all relative group flex flex-col items-center justify-start p-1
                           ${active ? 'border-black bg-black text-white z-10 scale-105 shadow-xl' : 'border-gray-100 hover:border-[#33bbc5]'}
                           ${isSunday ? 'text-red-500' : isSaturday ? 'text-blue-500' : ''}
                           ${active && (isSunday || isSaturday) ? 'text-white' : ''}
                           ${isToday(year, month, day) && !active ? 'ring-2 ring-[#33bbc5] ring-inset' : ''}
                         `}
                       >
-                        <span className="text-sm md:text-base font-bold">{day}</span>
-                        {isAssigned && !active && (
-                          <div className="absolute bottom-1 w-1 h-1 bg-[#33bbc5] rounded-full"></div>
-                        )}
-                        {isAssigned && active && (
-                          <div className="absolute bottom-1 w-1 h-1 bg-white rounded-full"></div>
+                        <span className="text-xs md:text-sm font-black mb-auto">{day}</span>
+                        
+                        {assignments[dateKey]?.length > 0 && (
+                          <div className="w-full overflow-hidden flex flex-col gap-[1px]">
+                            {assignments[dateKey].slice(0, 2).map(a => (
+                              <div key={a.id} className={`text-[7px] md:text-[8px] font-bold truncate leading-tight ${active ? 'text-white/60' : 'text-[#33bbc5]'}`}>
+                                {a.name}
+                              </div>
+                            ))}
+                            {assignments[dateKey].length > 2 && (
+                              <div className="text-[6px] font-black opacity-30">+{assignments[dateKey].length - 2}</div>
+                            )}
+                          </div>
                         )}
                       </button>
                     )
@@ -372,58 +379,63 @@ export default function DuballoStandaloneManual() {
                   key={`detail-${formatDateKey(selectedDate)}`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-6 p-6 border-2 border-black bg-gray-50 flex flex-col gap-6"
+                  className="mt-6 p-8 border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
                 >
-                  <div className="flex justify-between items-center pb-4 border-b border-black/5">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 pb-6 border-b-2 border-black/5">
                     <div className="flex items-center gap-6">
-                      <div className="w-12 h-12 bg-black text-white flex flex-col items-center justify-center rounded-sm">
-                        <span className="text-[10px] font-black uppercase leading-none mb-1">{selectedDate.toLocaleString('en-US', { month: 'short' })}</span>
-                        <span className="text-xl font-black leading-none">{selectedDate.getDate()}</span>
+                      <div className="bg-black text-white px-4 py-2 rounded-sm text-center">
+                        <div className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none mb-1">{selectedDate.toLocaleString('en-US', { month: 'short' })}</div>
+                        <div className="text-3xl font-black leading-none">{selectedDate.getDate()}</div>
                       </div>
-                      <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5]">Daily Shift Summary</div>
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#33bbc5] mb-1">Operational Personnel</div>
+                        <h4 className="text-2xl font-black uppercase tracking-tight">Shift Board</h4>
+                      </div>
                     </div>
                     {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                       <div className="flex items-center gap-2 text-[10px] font-black text-[#33bbc5]">
-                         <div className="w-2 h-2 bg-[#33bbc5] rounded-full animate-ping"></div>
-                         LIVE TODAY
-                       </div>
+                      <div className="px-3 py-1 bg-[#33bbc5] text-white text-[10px] font-black tracking-widest animate-pulse">
+                        LIVE MONITORING
+                      </div>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {assignments[formatDateKey(selectedDate)]?.length > 0 ? (
                       assignments[formatDateKey(selectedDate)].map(a => (
-                        <div key={a.id} className="p-4 bg-white border border-black/10 flex justify-between items-center group relative overflow-hidden">
+                        <div key={a.id} className="p-5 bg-gray-50 border-2 border-black flex justify-between items-center group relative">
                           {editingId === a.id && (
-                            <div className="absolute inset-0 bg-[#33bbc5]/10 border-l-4 border-[#33bbc5]"></div>
+                            <div className="absolute inset-0 bg-[#33bbc5]/5 border-l-8 border-[#33bbc5]"></div>
                           )}
-                          <div className="relative z-10 whitespace-nowrap overflow-hidden">
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-lg font-black">{a.name}</span>
-                              <span className="text-[10px] font-bold text-black/30">{a.time}</span>
+                          <div className="relative z-10 flex items-center gap-4">
+                            <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-xs">
+                              {a.name.charAt(0)}
+                            </div>
+                            <div className="whitespace-nowrap">
+                              <div className="text-xl font-black">{a.name}</div>
+                              <div className="text-[10px] font-bold text-[#33bbc5] uppercase tracking-wider">{a.time}</div>
                             </div>
                           </div>
                           {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                            <div className="flex items-center gap-1 relative z-10">
+                            <div className="flex items-center gap-2 relative z-10">
                               <button 
                                 onClick={() => startEditing(a)}
-                                className={`w-8 h-8 flex items-center justify-center transition-colors ${editingId === a.id ? 'text-[#33bbc5]' : 'text-gray-200 hover:text-black'}`}
+                                className={`p-2 transition-all ${editingId === a.id ? 'bg-black text-white' : 'bg-white border border-black hover:bg-black hover:text-white'}`}
                               >
-                                <Edit2 size={14} />
+                                <Edit2 size={16} />
                               </button>
                               <button 
                                 onClick={() => removeAssignment(formatDateKey(selectedDate), a.id)}
-                                className="w-8 h-8 flex items-center justify-center text-gray-200 hover:text-red-500 transition-colors"
+                                className="p-2 bg-white border border-black text-gray-300 hover:text-red-500 hover:border-red-500 transition-all"
                               >
-                                <XCircle size={16} />
+                                <Trash2 size={16} />
                               </button>
                             </div>
                           )}
                         </div>
                       ))
                     ) : (
-                      <div className="col-span-full py-8 text-center text-gray-300 font-bold uppercase tracking-widest text-xs">
-                        No Staff Assigned for this Date
+                      <div className="col-span-full py-12 text-center bg-gray-50 border-2 border-dashed border-black/10">
+                        <div className="text-xs font-black uppercase tracking-[0.3em] text-black/20">No Personnel Assigned</div>
                       </div>
                     )}
                   </div>
