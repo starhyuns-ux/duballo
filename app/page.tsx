@@ -206,7 +206,7 @@ export default function DuballoStandaloneManual() {
               <div className="text-xs md:text-base font-black uppercase tracking-[0.4em] md:tracking-[0.6em] mb-6 md:mb-8 text-[#33bbc5]">
                 Internal Operational Manual
               </div>
-              <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-[110px] font-black tracking-tighter leading-[0.9] md:leading-[0.85] uppercase break-words">
+              <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-[100px] font-black tracking-tighter leading-[0.9] md:leading-[0.85] uppercase break-words">
                 Blindingly<br />
                 Bright <span className="text-[#33bbc5]">(+)</span>
               </h1>
@@ -278,7 +278,7 @@ export default function DuballoStandaloneManual() {
             {/* Left Column: Info & Input Panels (4 cols) */}
             <div className="lg:col-span-4 space-y-10">
               <div className="mb-4">
-                <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter leading-none mb-8">
+                <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none mb-8">
                   Daily<br />Ops Log
                 </h2>
                 <p className="text-sm font-bold text-gray-500 mb-8">
@@ -455,19 +455,19 @@ export default function DuballoStandaloneManual() {
                         key={day} 
                         onClick={() => setSelectedDate(new Date(year, month, day))}
                         className={`
-                          aspect-square border-4 transition-all relative group flex flex-col items-center justify-start p-4
-                          ${active ? 'border-black bg-black text-white z-20 scale-110 shadow-2xl' : 'border-gray-50 hover:border-[#33bbc5]'}
+                          aspect-square border-4 transition-all relative group flex flex-col items-center justify-start p-3 md:p-5
+                          ${active ? 'border-black bg-black text-white z-20 scale-105 shadow-2xl' : 'border-gray-50 hover:border-[#33bbc5]'}
                           ${isSunday ? 'text-red-500' : isSaturday ? 'text-blue-500' : ''}
                           ${active && (isSunday || isSaturday) ? 'text-white' : ''}
                           ${isToday(year, month, day) && !active ? 'ring-4 ring-[#33bbc5] ring-inset' : ''}
                         `}
                       >
-                        <span className="text-xl md:text-4xl font-black mb-auto tracking-tighter">{day}</span>
+                        <span className="text-xl md:text-3xl font-black mb-auto tracking-tighter leading-none">{day}</span>
                         
                         {assignments[dateKey]?.length > 0 && (
                           <div className="w-full overflow-hidden flex flex-col gap-1 mt-2">
                             {assignments[dateKey].slice(0, 2).map(a => (
-                              <div key={a.id} className={`text-[10px] md:text-sm font-black truncate leading-none py-1 px-2 ${active ? 'text-white/60 bg-white/10' : 'text-black bg-[#33bbc5] text-white shadow-sm'}`}>
+                              <div key={a.id} className={`text-[9px] md:text-xs font-black truncate leading-tight py-1 px-2 rounded-sm ${active ? 'text-white/60 bg-white/10' : 'text-black bg-[#33bbc5] text-white shadow-sm'}`}>
                                 {a.name}
                               </div>
                             ))}
@@ -509,61 +509,70 @@ export default function DuballoStandaloneManual() {
                 </div>
               </div>
 
-              {/* Shift Board Detail (Photo 3 Style) */}
+              {/* SHIFT BOARD DETAIL VIEW (REFINED PROPORTIONS) */}
               <motion.div 
                 key={`detail-${formatDateKey(selectedDate)}`}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-12 border-[16px] border-black bg-white shadow-[32px_32px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden"
+                className="p-10 md:p-14 border-[16px] border-black bg-white shadow-[32px_32px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden"
               >
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10 mb-16 pb-12 border-b-[12px] border-black/5">
-                  <div className="flex items-center gap-12">
-                    <div className="bg-black text-white px-10 py-8 rounded-sm text-center shadow-[10px_10px_0px_0px_rgba(51,187,197,1)] scale-110">
-                      <div className="text-sm font-black uppercase tracking-[0.4em] opacity-40 mb-2">{selectedDate.toLocaleString('en-US', { month: 'short' })}</div>
-                      <div className="text-7xl font-black leading-none">{selectedDate.getDate()}</div>
+                <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#33bbc5]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+                
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-12 pb-10 border-b-[10px] border-black/5 relative z-10">
+                  <div className="flex items-center gap-10">
+                    <div className="bg-black text-white px-10 py-8 rounded-sm text-center shadow-[10px_10px_0px_0px_rgba(51,187,197,1)] hover:rotate-2 transition-transform duration-500">
+                      <div className="text-xs font-black uppercase tracking-[0.4em] opacity-40 leading-none mb-4">{selectedDate.toLocaleString('en-US', { month: 'short' })}</div>
+                      <div className="text-6xl font-black leading-none tracking-tighter">{selectedDate.getDate()}</div>
                     </div>
                     <div className="relative">
-                      <div className="text-sm font-black uppercase tracking-[0.5em] text-[#33bbc5] mb-3">Operational Personnel</div>
-                      <h4 className="text-6xl lg:text-7xl font-black uppercase tracking-tighter leading-none">Shift Board</h4>
+                      <div className="text-xs font-black uppercase tracking-[0.6em] text-[#33bbc5] mb-4">Operational Personnel</div>
+                      <h4 className="text-5xl lg:text-7xl font-black uppercase tracking-tighter leading-none mb-2">Shift Board</h4>
+                      <div className="h-2 bg-[#33bbc5] w-32 mt-2"></div>
                     </div>
                   </div>
                   {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                    <div className="px-10 py-3 bg-[#33bbc5] text-white text-xs font-black tracking-[0.6em] animate-pulse rounded-full shadow-lg">
-                      LIVE MONITORING
+                    <div className="px-8 py-3 bg-[#33bbc5] text-white text-[10px] font-black tracking-[0.6em] animate-pulse rounded-full shadow-xl uppercase">
+                      Live Monitoring
                     </div>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
                   {assignments[formatDateKey(selectedDate)]?.length > 0 ? (
                     assignments[formatDateKey(selectedDate)].map(a => (
-                      <div key={a.id} className="p-8 bg-white border-[6px] border-black flex justify-between items-center group relative hover:translate-x-3 hover:-translate-y-3 transition-all duration-500 shadow-[10px_10px_0px_0px_rgba(0,0,0,0.05)]">
+                      <div key={a.id} className="p-8 bg-white border-[6px] border-black flex justify-between items-center group relative hover:translate-x-2 hover:-translate-y-2 transition-all duration-500 shadow-[15px_15px_0px_0px_rgba(0,0,0,0.03)] hover:shadow-[20px_20px_0px_0px_rgba(51,187,197,0.1)]">
                         {editingId === a.id && (
                           <div className="absolute inset-0 bg-[#33bbc5]/5 border-l-[20px] border-[#33bbc5]"></div>
                         )}
                         <div className="relative z-10 flex items-center gap-8">
-                          <div className="w-20 h-20 bg-black text-white flex items-center justify-center font-black text-4xl shadow-xl">
+                          <div className="w-20 h-20 bg-black text-white flex items-center justify-center font-black text-4xl shadow-xl group-hover:scale-105 transition-transform duration-500">
                             {a.name.substring(0, 1)}
                           </div>
                           <div className="whitespace-nowrap">
-                            <div className="text-5xl font-black tracking-tighter mb-2">{a.name}</div>
-                            <div className="text-xs font-black text-[#33bbc5] uppercase tracking-[0.4em]">{a.time}</div>
+                            <div className="text-4xl font-black tracking-tighter mb-2 group-hover:text-[#33bbc5] transition-colors">{a.name}</div>
+                            <div className="text-[10px] font-black text-[#33bbc5] uppercase tracking-[0.4em] bg-[#33bbc5]/10 px-3 py-1.5 inline-block rounded-sm">{a.time}</div>
                           </div>
                         </div>
                         {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                          <div className="flex flex-col gap-2 relative z-10">
-                            <button onClick={() => startEditing(a)} className={`p-4 border-2 border-black transition-all ${editingId === a.id ? 'bg-black text-white' : 'bg-white hover:bg-black hover:text-white'}`}>
-                              <Edit2 size={24} />
+                          <div className="flex flex-col gap-3 relative z-10 opacity-10 group-hover:opacity-100 transition-all duration-500">
+                            <button 
+                              onClick={() => startEditing(a)}
+                              className={`p-4 border-[4px] border-black transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:bg-[#33bbc5] hover:border-[#33bbc5] hover:text-white hover:shadow-none hover:translate-x-1 hover:translate-y-1 ${editingId === a.id ? 'bg-black text-white shadow-none translate-x-1 translate-y-1' : 'bg-white'}`}
+                            >
+                              <Edit2 size={24} strokeWidth={3} />
                             </button>
-                            <button onClick={() => removeAssignment(formatDateKey(selectedDate), a.id)} className="p-4 bg-white border-2 border-black text-gray-200 hover:text-red-500 transition-all">
-                              <Trash2 size={24} />
+                            <button 
+                              onClick={() => removeAssignment(formatDateKey(selectedDate), a.id)}
+                              className="p-4 bg-white border-[4px] border-black text-gray-200 hover:text-red-500 hover:border-red-500 transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+                            >
+                              <Trash2 size={24} strokeWidth={3} />
                             </button>
                           </div>
                         )}
                       </div>
                     ))
                   ) : (
-                    <div className="col-span-full py-32 text-center bg-gray-50 border-[8px] border-dashed border-black/5 rounded-3xl">
+                    <div className="col-span-full py-24 text-center bg-gray-50 border-[8px] border-dashed border-black/5 rounded-2xl">
                       <div className="text-xl font-black uppercase tracking-[1em] text-black/10">Archive Empty</div>
                     </div>
                   )}
