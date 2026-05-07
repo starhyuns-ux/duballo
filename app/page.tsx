@@ -345,7 +345,7 @@ export default function DuballoStandaloneManual() {
                           }`}
                         >
                           {editingId !== null ? <Save size={16} /> : <Plus size={16} />}
-                          {editingId !== null ? 'Update Shift' : 'Add to Shift'}
+                          {editingId !== null ? 'Update' : 'Add Staff'}
                         </button>
                       </div>
                     )}
@@ -379,62 +379,14 @@ export default function DuballoStandaloneManual() {
                   </div>
                 </div>
               </motion.div>
-
-              {/* Work Log Section */}
-              <motion.div 
-                key={`log-${formatDateKey(selectedDate)}`}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white border-[6px] border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)]"
-              >
-                <div className="flex justify-between items-center mb-6">
-                  <div className="text-xs font-black uppercase tracking-[0.3em] text-black/40">Daily Work Log</div>
-                  <FileText size={20} className="text-black/20" />
-                </div>
-
-                <div className="space-y-6">
-                  <textarea 
-                    value={tempLog}
-                    onChange={(e) => {
-                      const val = e.target.value
-                      setTempLog(val)
-                      if (isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())) {
-                        const key = formatDateKey(selectedDate)
-                        setLogs(prev => ({ ...prev, [key]: val }))
-                      }
-                    }}
-                    disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
-                    placeholder="오늘의 업무 일지를 작성하세요..."
-                    rows={6}
-                    className={`w-full bg-gray-50 border-4 p-6 font-black text-lg outline-none transition-colors leading-relaxed resize-none ${
-                      isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())
-                        ? 'border-gray-100 focus:border-black' 
-                        : 'border-transparent text-gray-400 cursor-not-allowed'
-                    }`}
-                  />
-
-                  {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#33bbc5]">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 bg-[#33bbc5] rounded-full animate-pulse"></div>
-                        Auto-saving...
-                      </div>
-                      <button onClick={clearDayData} className="text-red-500 hover:bg-red-50 px-2 py-1 transition-colors">
-                        Clear All
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
             </div>
 
             {/* Right Column: Enlarged Calendar & Shift Board (8 cols) */}
             <div className="lg:col-span-8 space-y-12">
-              <div className="border-[20px] border-black p-10 md:p-20 bg-white shadow-2xl relative">
-                <div className="grid grid-cols-7 gap-4 mb-16 relative z-10">
+              <div className="border-[12px] border-black p-6 md:p-10 bg-white shadow-xl relative">
+                <div className="grid grid-cols-7 gap-2 mb-8 relative z-10">
                   {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
-                    <div key={day} className="text-xs font-black uppercase text-center opacity-40 pb-6 border-b-2 border-black/5">{day}</div>
+                    <div key={day} className="text-[10px] font-black uppercase text-center opacity-40 pb-4 border-b border-black/5">{day}</div>
                   ))}
                   {Array.from({ length: getFirstDayOfMonth(viewDate.getFullYear(), viewDate.getMonth()) }).map((_, i) => (
                     <div key={`empty-${i}`} className="aspect-square"></div>
@@ -455,19 +407,19 @@ export default function DuballoStandaloneManual() {
                         key={day} 
                         onClick={() => setSelectedDate(new Date(year, month, day))}
                         className={`
-                          aspect-square border-[3px] transition-all relative group flex flex-col items-center justify-start p-2 md:p-3
-                          ${active ? 'border-black bg-black text-white z-20 scale-105 shadow-xl' : 'border-gray-50 hover:border-[#33bbc5]'}
+                          aspect-square border-2 transition-all relative group flex flex-col items-center justify-start p-1.5 md:p-2
+                          ${active ? 'border-black bg-black text-white z-20 scale-105 shadow-lg' : 'border-gray-50 hover:border-[#33bbc5]'}
                           ${isSunday ? 'text-red-500' : isSaturday ? 'text-blue-500' : ''}
                           ${active && (isSunday || isSaturday) ? 'text-white' : ''}
                           ${isToday(year, month, day) && !active ? 'ring-2 ring-[#33bbc5] ring-inset' : ''}
                         `}
                       >
-                        <span className="text-lg md:text-2xl font-black mb-auto tracking-tighter leading-none">{day}</span>
+                        <span className="text-base md:text-xl font-black mb-auto tracking-tighter leading-none">{day}</span>
                         
                         {assignments[dateKey]?.length > 0 && (
-                          <div className="w-full flex flex-col gap-0.5 mt-1">
+                          <div className="w-full flex flex-col gap-0.5 mt-0.5">
                             {assignments[dateKey].slice(0, 3).map(a => (
-                              <div key={a.id} className={`text-[7px] md:text-[9px] font-black leading-none py-0.5 px-1 rounded-sm whitespace-nowrap overflow-hidden ${active ? 'text-white/60 bg-white/10' : 'text-black bg-[#33bbc5] text-white shadow-sm'}`}>
+                              <div key={a.id} className={`text-[6px] md:text-[8px] font-black leading-none py-0.5 px-1 rounded-sm whitespace-nowrap overflow-hidden ${active ? 'text-white/60 bg-white/10' : 'text-black bg-[#33bbc5] text-white shadow-sm'}`}>
                                 {a.name}
                               </div>
                             ))}
@@ -478,109 +430,181 @@ export default function DuballoStandaloneManual() {
                   })}
                 </div>
 
-                <div className="flex justify-between items-center pt-10 border-t-8 border-black">
-                   <div className="text-3xl font-black uppercase tracking-tighter leading-none">
-                     {viewDate.toLocaleString('en-US', { month: 'long', year: 'numeric' })}
+                <div className="flex justify-between items-center pt-6 border-t-4 border-black">
+                   <div className="text-xl font-black uppercase tracking-tighter leading-none">
+                     {viewDate.toLocaleString('en-US', { month: 'short', year: 'numeric' })}
                    </div>
-                   <div className="flex gap-4">
+                   <div className="flex gap-2">
                       <button 
                         onClick={() => {
                           const today = new Date()
                           setViewDate(new Date(today.getFullYear(), today.getMonth(), 1))
                           setSelectedDate(today)
                         }}
-                        className="px-6 border-[6px] border-black font-black uppercase text-xs tracking-widest hover:bg-black hover:text-white transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
+                        className="px-4 py-2 border-[4px] border-black font-black uppercase text-[10px] tracking-widest hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0.5 active:translate-y-0.5"
                       >
                         Today
                       </button>
                       <button 
                         onClick={() => changeMonth(-1)}
-                        className="w-14 h-14 border-[6px] border-black flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
+                        className="w-10 h-10 border-[4px] border-black flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0.5 active:translate-y-0.5"
                       >
-                        <ChevronRight size={24} className="rotate-180" />
+                        <ChevronRight size={18} className="rotate-180" />
                       </button>
                       <button 
                         onClick={() => changeMonth(1)}
-                        className="w-14 h-14 border-[6px] border-black flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
+                        className="w-10 h-10 border-[4px] border-black flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0.5 active:translate-y-0.5"
                       >
-                        <ChevronRight size={24} />
+                        <ChevronRight size={18} />
                       </button>
                    </div>
                 </div>
               </div>
 
-              {/* SHIFT BOARD DETAIL VIEW (COMPACT DASHBOARD STYLE) */}
+              {/* SHIFT BOARD DETAIL VIEW (COMPACT 0.6x STYLE) */}
               <motion.div 
                 key={`detail-${formatDateKey(selectedDate)}`}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-8 md:p-10 border-[12px] border-black bg-white shadow-[24px_24px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden"
+                className="p-5 md:p-8 border-[10px] border-black bg-white shadow-lg relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#33bbc5]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+                <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-[#33bbc5]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
                 
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8 pb-8 border-b-[6px] border-black/5 relative z-10">
-                  <div className="flex items-center gap-8">
-                    <div className="bg-black text-white px-8 py-6 rounded-sm text-center shadow-[8px_8px_0px_0px_rgba(51,187,197,1)]">
-                      <div className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40 leading-none mb-3">{selectedDate.toLocaleString('en-US', { month: 'short' })}</div>
-                      <div className="text-4xl font-black leading-none tracking-tighter">{selectedDate.getDate()}</div>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6 pb-6 border-b-[4px] border-black/5 relative z-10">
+                  <div className="flex items-center gap-6">
+                    <div className="bg-black text-white px-6 py-4 rounded-sm text-center shadow-[6px_6px_0px_0px_rgba(51,187,197,1)]">
+                      <div className="text-[8px] font-black uppercase tracking-[0.4em] opacity-40 leading-none mb-2">{selectedDate.toLocaleString('en-US', { month: 'short' })}</div>
+                      <div className="text-3xl font-black leading-none tracking-tighter">{selectedDate.getDate()}</div>
                     </div>
                     <div className="relative">
-                      <div className="text-[10px] font-black uppercase tracking-[0.6em] text-[#33bbc5] mb-2">Operational Personnel</div>
-                      <h4 className="text-3xl lg:text-4xl font-black uppercase tracking-tighter leading-none">Shift Board</h4>
-                      <div className="h-1.5 bg-[#33bbc5] w-20 mt-2"></div>
+                      <div className="text-[8px] font-black uppercase tracking-[0.6em] text-[#33bbc5] mb-1">Operational Personnel</div>
+                      <h4 className="text-2xl lg:text-3xl font-black uppercase tracking-tighter leading-none">Shift Board</h4>
+                      <div className="h-1 bg-[#33bbc5] w-12 mt-1"></div>
                     </div>
                   </div>
                   {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                    <div className="px-6 py-2.5 bg-[#33bbc5] text-white text-[9px] font-black tracking-[0.6em] animate-pulse rounded-full shadow-lg uppercase">
+                    <div className="px-4 py-1.5 bg-[#33bbc5] text-white text-[8px] font-black tracking-[0.4em] animate-pulse rounded-full uppercase">
                       Live
                     </div>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
                   {assignments[formatDateKey(selectedDate)]?.length > 0 ? (
                     assignments[formatDateKey(selectedDate)].map(a => (
-                      <div key={a.id} className="p-6 bg-white border-[4px] border-black flex justify-between items-center group relative hover:translate-x-1 hover:-translate-y-1 transition-all duration-500 shadow-[10px_10px_0px_0px_rgba(0,0,0,0.02)]">
+                      <div key={a.id} className="p-4 bg-white border-[3px] border-black flex justify-between items-center group relative hover:translate-x-0.5 hover:-translate-y-0.5 transition-all duration-500 shadow-sm">
                         {editingId === a.id && (
-                          <div className="absolute inset-0 bg-[#33bbc5]/5 border-l-[12px] border-[#33bbc5]"></div>
+                          <div className="absolute inset-0 bg-[#33bbc5]/5 border-l-[8px] border-[#33bbc5]"></div>
                         )}
-                        <div className="relative z-10 flex items-center gap-4 md:gap-6 flex-1 pr-16">
-                          <div className="w-12 h-12 md:w-14 md:h-14 bg-black text-white flex items-center justify-center font-black text-xl md:text-2xl shadow-lg shrink-0">
+                        <div className="relative z-10 flex items-center gap-4 flex-1 pr-12">
+                          <div className="w-10 h-10 bg-black text-white flex items-center justify-center font-black text-lg shadow-md shrink-0">
                             {a.name.substring(0, 1)}
                           </div>
                           <div>
-                            <div className="text-xl md:text-2xl font-black tracking-tighter mb-1 group-hover:text-[#33bbc5] transition-colors whitespace-nowrap">{a.name}</div>
-                            <div className="text-[8px] md:text-[9px] font-black text-[#33bbc5] uppercase tracking-[0.2em] bg-[#33bbc5]/10 px-2 py-1 inline-block rounded-sm whitespace-nowrap">{a.time}</div>
+                            <div className="text-lg font-black tracking-tighter mb-0.5 group-hover:text-[#33bbc5] transition-colors whitespace-nowrap">{a.name}</div>
+                            <div className="text-[8px] font-black text-[#33bbc5] uppercase tracking-[0.2em] bg-[#33bbc5]/10 px-1.5 py-0.5 inline-block rounded-sm whitespace-nowrap">{a.time}</div>
                           </div>
                         </div>
                         {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                          <div className="absolute top-4 right-4 flex flex-col gap-1.5 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                          <div className="absolute top-2 right-2 flex flex-col gap-1 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300">
                             <button 
                               onClick={() => startEditing(a)}
-                              className={`p-2 border-[2px] border-black transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 ${editingId === a.id ? 'bg-black text-white' : 'bg-white hover:bg-[#33bbc5] hover:border-[#33bbc5] hover:text-white'}`}
+                              className={`p-1.5 border-[2px] border-black transition-all ${editingId === a.id ? 'bg-black text-white' : 'bg-white hover:bg-[#33bbc5] hover:text-white'}`}
                               title="Edit"
                             >
-                              <Edit2 size={14} strokeWidth={3} />
+                              <Edit2 size={12} strokeWidth={3} />
                             </button>
                             <button 
                               onClick={() => removeAssignment(formatDateKey(selectedDate), a.id)}
-                              className="p-2 bg-white border-[2px] border-black text-gray-300 hover:text-red-500 hover:border-red-500 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5"
+                              className="p-1.5 bg-white border-[2px] border-black text-gray-300 hover:text-red-500 transition-all"
                               title="Delete"
                             >
-                              <Trash2 size={14} strokeWidth={3} />
+                              <Trash2 size={12} strokeWidth={3} />
                             </button>
                           </div>
                         )}
                       </div>
                     ))
                   ) : (
-                    <div className="col-span-full py-16 text-center bg-gray-50 border-[6px] border-dashed border-black/5 rounded-xl">
-                      <div className="text-sm font-black uppercase tracking-[0.8em] text-black/10">Archive Empty</div>
+                    <div className="col-span-full py-12 text-center bg-gray-50 border-[4px] border-dashed border-black/5 rounded-lg">
+                      <div className="text-xs font-black uppercase tracking-[0.6em] text-black/10">Archive Empty</div>
                     </div>
                   )}
                 </div>
               </motion.div>
             </div>
+          </div>
+
+          {/* NEW FULL-WIDTH DAILY WORK LOG WIDGET */}
+          <div className="mt-16 md:mt-24">
+            <motion.div 
+              key={`log-wide-${formatDateKey(selectedDate)}`}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white border-[12px] border-black p-8 md:p-12 shadow-[32px_32px_0px_0px_rgba(0,0,0,0.05)] relative"
+            >
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+                <div className="flex items-center gap-6">
+                  <div className="p-4 bg-[#33bbc5] text-white rounded-sm shadow-lg">
+                    <FileText size={32} />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#33bbc5] mb-2">Extended Widget</div>
+                    <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none">Daily Work Log</h2>
+                  </div>
+                </div>
+                {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
+                  <div className="flex items-center gap-8">
+                    <div className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-[#33bbc5]">
+                      <div className="w-3 h-3 bg-[#33bbc5] rounded-full animate-pulse"></div>
+                      Secure Cloud Sync Active
+                    </div>
+                    <button 
+                      onClick={clearDayData}
+                      className="px-6 py-2 border-2 border-red-500 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"
+                    >
+                      Clear Data
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="relative">
+                <textarea 
+                  value={tempLog}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    setTempLog(val)
+                    if (isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())) {
+                      const key = formatDateKey(selectedDate)
+                      setLogs(prev => ({ ...prev, [key]: val }))
+                    }
+                  }}
+                  disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
+                  placeholder="오늘의 상세 업무 내용을 기록하세요 (회의록, 환자 피드백, 특이사항 등)..."
+                  rows={8}
+                  className={`w-full bg-gray-50 border-[6px] p-10 font-bold text-xl md:text-2xl outline-none transition-all leading-relaxed resize-none shadow-inner ${
+                    isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())
+                      ? 'border-gray-100 focus:border-black focus:bg-white' 
+                      : 'border-transparent text-gray-300 cursor-not-allowed'
+                  }`}
+                />
+                {!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[2px] pointer-events-none">
+                    <div className="bg-black text-white px-8 py-4 font-black uppercase tracking-widest text-xs">Read Only Mode</div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-8 flex justify-between items-center">
+                <div className="text-[10px] font-black uppercase tracking-widest opacity-20">
+                  Duballo Ops Terminal v2.0
+                </div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5]">
+                  Character Count: {tempLog.length}
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
