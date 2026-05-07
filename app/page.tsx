@@ -55,7 +55,7 @@ export default function DuballoStandaloneManual() {
   const [viewDate, setViewDate] = React.useState(new Date())
   const [selectedDate, setSelectedDate] = React.useState(new Date())
   
-  const [assignments, setAssignments] = React.useState<Record<string, string>>({})
+  const [assignments, setAssignments] = React.useState<Record<string, { name: string, time: string }>>({})
   const [logs, setLogs] = React.useState<Record<string, string>>({})
   const [teamMembers, setTeamMembers] = React.useState([
     { id: 1, name: '이지윤 실장', role: 'Insurance Claims Specialist', title: 'Team Leader', phone: '010-1234-5678', image: '/team-1.png' },
@@ -87,6 +87,7 @@ export default function DuballoStandaloneManual() {
   }, [assignments, logs, teamMembers, isLoaded])
 
   const [tempManager, setTempManager] = React.useState('')
+  const [tempTime, setTempTime] = React.useState('09:00 - 18:00')
   const [tempLog, setTempLog] = React.useState('')
 
   const formatDateKey = (date: Date) => {
@@ -95,9 +96,16 @@ export default function DuballoStandaloneManual() {
 
   React.useEffect(() => {
     const key = formatDateKey(selectedDate)
-    setTempManager(assignments[key] || '')
+    const assignment = assignments[key] || { name: '', time: '09:00 - 18:00' }
+    setTempManager(assignment.name)
+    setTempTime(assignment.time)
     setTempLog(logs[key] || '')
   }, [selectedDate, assignments, logs])
+
+  const handleSaveAssignment = (name: string, time: string) => {
+    const key = formatDateKey(selectedDate)
+    setAssignments(prev => ({ ...prev, [key]: { name, time } }))
+  }
 
   const handleSave = () => {
     const key = formatDateKey(selectedDate)
@@ -175,7 +183,8 @@ export default function DuballoStandaloneManual() {
                 >
                   <div className="flex flex-col items-start">
                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#33bbc5]">오늘의 담당자</span>
-                    <span className="text-2xl font-black">{assignments[formatDateKey(new Date())]}</span>
+                    <span className="text-2xl font-black">{assignments[formatDateKey(new Date())]?.name}</span>
+                    <span className="text-[10px] font-bold opacity-60">{assignments[formatDateKey(new Date())]?.time}</span>
                   </div>
                   <CheckCircle2 size={24} className="text-[#33bbc5] ml-4" />
                 </motion.div>
@@ -303,6 +312,38 @@ export default function DuballoStandaloneManual() {
                       </button>
                    </div>
                 </div>
+
+                {/* Selected Date Detail View (Below Calendar) */}
+                <motion.div 
+                  key={`detail-${formatDateKey(selectedDate)}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-6 p-6 border-2 border-black bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-6"
+                >
+                  <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 bg-black text-white flex flex-col items-center justify-center rounded-sm">
+                      <span className="text-[10px] font-black uppercase leading-none mb-1">{selectedDate.toLocaleString('en-US', { month: 'short' })}</span>
+                      <span className="text-xl font-black leading-none">{selectedDate.getDate()}</span>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5] mb-1">Assigned Personnel</div>
+                      <div className="text-xl font-black uppercase">
+                        {assignments[formatDateKey(selectedDate)]?.name || 'No Assignment'}
+                      </div>
+                    </div>
+                  </div>
+                  {assignments[formatDateKey(selectedDate)] && (
+                    <div className="flex items-center gap-4 border-l-2 border-black/10 pl-6 h-full">
+                      <div className="text-right">
+                        <div className="text-[10px] font-black uppercase tracking-widest text-black/40 mb-1">Shift Time</div>
+                        <div className="text-sm font-bold uppercase tracking-tight">
+                          {assignments[formatDateKey(selectedDate)]?.time}
+                        </div>
+                      </div>
+                      <Clock size={20} className="text-[#33bbc5]" />
+                    </div>
+                  )}
+                </motion.div>
               </div>
             </div>
 
@@ -322,32 +363,43 @@ export default function DuballoStandaloneManual() {
                   
                   <div className="space-y-4">
                     {/* Quick Add / Input */}
-                    <div>
-                      <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-3">Direct Entry / New Staff</label>
-                      <div className="flex gap-2">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">Staff Name</label>
                         <input 
                           type="text" 
                           value={tempManager}
                           onChange={(e) => setTempManager(e.target.value)}
                           disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
                           placeholder="담당자 이름 입력..."
-                          className="flex-1 bg-white/5 border-b-2 border-white/20 p-2 font-bold focus:border-[#33bbc5] outline-none transition-colors"
+                          className="w-full bg-white/5 border-b-2 border-white/20 p-2 font-bold focus:border-[#33bbc5] outline-none transition-colors"
                         />
-                        {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                          <button 
-                            onClick={handleSave}
-                            className="bg-[#33bbc5] px-4 py-2 font-black uppercase text-[10px] tracking-widest hover:bg-white hover:text-black transition-all"
-                          >
-                            Assign
-                          </button>
-                        )}
                       </div>
+                      <div>
+                        <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">Shift Time</label>
+                        <input 
+                          type="text" 
+                          value={tempTime}
+                          onChange={(e) => setTempTime(e.target.value)}
+                          disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
+                          placeholder="예: 09:00 - 18:00"
+                          className="w-full bg-white/5 border-b-2 border-white/20 p-2 font-bold focus:border-[#33bbc5] outline-none transition-colors"
+                        />
+                      </div>
+                      {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
+                        <button 
+                          onClick={() => handleSaveAssignment(tempManager, tempTime)}
+                          className="w-full bg-[#33bbc5] py-3 font-black uppercase text-[10px] tracking-widest hover:bg-white hover:text-black transition-all"
+                        >
+                          Confirm Assignment
+                        </button>
+                      )}
                     </div>
 
                     <div className="h-[1px] bg-white/10 my-4"></div>
 
                     {/* Selection List - Simplified */}
-                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">Quick Select</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest opacity-40 block mb-2">Quick Select Staff</label>
                     <div className="flex flex-wrap gap-2">
                       {teamMembers.map(member => (
                         <button
@@ -355,10 +407,8 @@ export default function DuballoStandaloneManual() {
                           disabled={!isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())}
                           onClick={() => {
                             setTempManager(member.name)
-                            // Auto save on selection if it's today
                             if (isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate())) {
-                              const key = formatDateKey(selectedDate)
-                              setAssignments(prev => ({ ...prev, [key]: member.name }))
+                              handleSaveAssignment(member.name, tempTime)
                             }
                           }}
                           className={`px-3 py-2 text-xs font-bold transition-all border ${
