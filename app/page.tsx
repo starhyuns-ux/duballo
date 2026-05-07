@@ -544,30 +544,30 @@ export default function DuballoStandaloneManual() {
                         {editingId === a.id && (
                           <div className="absolute inset-0 bg-[#33bbc5]/5 border-l-[12px] border-[#33bbc5]"></div>
                         )}
-                        <div className="relative z-10 flex items-center gap-4 md:gap-6 flex-1 min-w-0">
+                        <div className="relative z-10 flex items-center gap-4 md:gap-6 flex-1 pr-16">
                           <div className="w-12 h-12 md:w-14 md:h-14 bg-black text-white flex items-center justify-center font-black text-xl md:text-2xl shadow-lg shrink-0">
                             {a.name.substring(0, 1)}
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="text-xl md:text-2xl font-black tracking-tighter mb-1 group-hover:text-[#33bbc5] transition-colors truncate">{a.name}</div>
-                            <div className="text-[8px] md:text-[9px] font-black text-[#33bbc5] uppercase tracking-[0.2em] bg-[#33bbc5]/10 px-2 py-1 inline-block rounded-sm truncate max-w-full">{a.time}</div>
+                          <div>
+                            <div className="text-xl md:text-2xl font-black tracking-tighter mb-1 group-hover:text-[#33bbc5] transition-colors whitespace-nowrap">{a.name}</div>
+                            <div className="text-[8px] md:text-[9px] font-black text-[#33bbc5] uppercase tracking-[0.2em] bg-[#33bbc5]/10 px-2 py-1 inline-block rounded-sm whitespace-nowrap">{a.time}</div>
                           </div>
                         </div>
                         {isToday(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) && (
-                          <div className="flex gap-1.5 md:gap-2 relative z-10 shrink-0 ml-4 opacity-10 group-hover:opacity-100 transition-all duration-500">
+                          <div className="absolute top-4 right-4 flex flex-col gap-1.5 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300">
                             <button 
                               onClick={() => startEditing(a)}
-                              className={`p-2 md:p-2.5 border-[2px] md:border-[3px] border-black transition-all ${editingId === a.id ? 'bg-black text-white' : 'bg-white hover:bg-black hover:text-white'}`}
+                              className={`p-2 border-[2px] border-black transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 ${editingId === a.id ? 'bg-black text-white' : 'bg-white hover:bg-[#33bbc5] hover:border-[#33bbc5] hover:text-white'}`}
                               title="Edit"
                             >
-                              <Edit2 size={16} strokeWidth={3} />
+                              <Edit2 size={14} strokeWidth={3} />
                             </button>
                             <button 
                               onClick={() => removeAssignment(formatDateKey(selectedDate), a.id)}
-                              className="p-2 md:p-2.5 bg-white border-[2px] md:border-[3px] border-black text-gray-300 hover:text-red-500 hover:border-red-500 transition-all"
+                              className="p-2 bg-white border-[2px] border-black text-gray-300 hover:text-red-500 hover:border-red-500 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5"
                               title="Delete"
                             >
-                              <Trash2 size={16} strokeWidth={3} />
+                              <Trash2 size={14} strokeWidth={3} />
                             </button>
                           </div>
                         )}
