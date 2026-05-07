@@ -236,7 +236,7 @@ export default function DuballoStandaloneManual() {
               <div className="text-xs md:text-base font-black uppercase tracking-[0.4em] md:tracking-[0.6em] mb-6 md:mb-8 text-[#33bbc5]">
                 Internal Operational Manual
               </div>
-              <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-[100px] font-black tracking-tighter leading-[0.9] md:leading-[0.85] uppercase break-words">
+              <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-[100px] font-black tracking-tighter leading-[0.9] md:leading-[0.85] uppercase break-words">
                 Blindingly<br />
                 Bright <span className="text-[#33bbc5]">(+)</span>
               </h1>
@@ -250,7 +250,7 @@ export default function DuballoStandaloneManual() {
               >
                 Launch Kiosk App <ExternalLink size={16} />
               </a>
-              <span className="font-serif italic text-3xl md:text-4xl lg:text-6xl text-[#33bbc5] block mb-4 md:mb-6">
+              <span className="font-serif italic text-2xl sm:text-4xl lg:text-6xl text-[#33bbc5] block mb-2 md:mb-6">
                 hello duballo
               </span>
               <div className="text-[10px] md:text-sm font-mono font-bold uppercase tracking-widest opacity-40 mb-4">
@@ -260,14 +260,14 @@ export default function DuballoStandaloneManual() {
                 <motion.div 
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-black text-white px-8 py-4 rounded-sm flex flex-col gap-3 shadow-2xl border-l-8 border-[#33bbc5]"
+                  className="bg-black text-white px-4 md:px-8 py-3 md:py-4 rounded-sm flex flex-col gap-2 md:gap-3 shadow-2xl border-l-4 md:border-l-8 border-[#33bbc5] w-full md:w-auto"
                 >
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#33bbc5]">오늘의 담당자 ({assignments[formatDateKey(new Date())].length})</span>
-                  <div className="flex flex-wrap gap-x-8 gap-y-2">
+                  <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-[#33bbc5]">오늘의 담당자 ({assignments[formatDateKey(new Date())].length})</span>
+                  <div className="flex flex-wrap gap-x-4 md:gap-x-8 gap-y-1">
                     {assignments[formatDateKey(new Date())].map(a => (
                       <div key={a.id} className="flex items-baseline gap-2 whitespace-nowrap">
-                        <span className="text-xl font-black">{a.name}</span>
-                        <span className="text-[10px] font-bold opacity-50 tracking-tight">{a.time}</span>
+                        <span className="text-sm md:text-xl font-black">{a.name}</span>
+                        <span className="text-[8px] md:text-[10px] font-bold opacity-50 tracking-tight">{a.time}</span>
                       </div>
                     ))}
                   </div>
@@ -315,12 +315,12 @@ export default function DuballoStandaloneManual() {
                   날짜를 선택하여 담당자를 지정하고 업무 내용을 기록하세요. 실시간 자동 저장됩니다.
                 </p>
                 
-                <div className="p-8 bg-gray-50 border-4 border-black mb-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#33bbc5] mb-2">Selected Date</div>
-                  <div className="text-4xl font-black tracking-tighter">{formatDateKey(selectedDate).replace(/-/g, '.')}</div>
+                <div className="p-4 md:p-8 bg-gray-50 border-2 md:border-4 border-black mb-6 md:mb-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] md:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
+                  <div className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] text-[#33bbc5] mb-1 md:mb-2">Selected Date</div>
+                  <div className="text-2xl md:text-4xl font-black tracking-tighter">{formatDateKey(selectedDate).replace(/-/g, '.')}</div>
                 </div>
 
-                <div className="flex flex-wrap gap-6 mb-12">
+                <div className="flex flex-wrap gap-4 md:gap-6 mb-8 md:mb-12">
                   <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest">
                     <div className="w-5 h-5 bg-[#33bbc5]"></div> Assigned
                   </div>
@@ -335,7 +335,7 @@ export default function DuballoStandaloneManual() {
                 key={`personnel-${formatDateKey(selectedDate)}`}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-black text-white p-8 border-l-[12px] border-[#33bbc5] shadow-2xl"
+                className="bg-black text-white p-6 md:p-8 border-l-[8px] md:border-l-[12px] border-[#33bbc5] shadow-2xl"
               >
                 <div className="flex justify-between items-center mb-8">
                   <div className="text-xs font-black uppercase tracking-[0.3em] text-[#33bbc5]">Personnel Assignment</div>
@@ -361,7 +361,7 @@ export default function DuballoStandaloneManual() {
                         value={tempTime}
                         onChange={(e) => setTempTime(e.target.value)}
                         placeholder="09:00 - 18:00"
-                        className="w-full bg-white/10 border-b-2 border-white/20 p-3 font-black text-xl focus:border-[#33bbc5] outline-none transition-colors"
+                        className="w-full bg-white/10 border-b-2 border-white/20 p-2 md:p-3 font-black text-lg md:text-xl focus:border-[#33bbc5] outline-none transition-colors"
                       />
                     </div>
                       <div className="flex gap-2 pt-2">
@@ -403,9 +403,9 @@ export default function DuballoStandaloneManual() {
             </div>
 
             {/* Right Column: Enlarged Calendar & Shift Board (8 cols) */}
-            <div className="lg:col-span-8 space-y-12">
-              <div className="border-[12px] border-black p-6 md:p-10 bg-white shadow-xl relative">
-                <div className="grid grid-cols-7 gap-2 mb-8 relative z-10">
+            <div className="lg:col-span-8 space-y-8 md:space-y-12">
+              <div className="border-[6px] md:border-[12px] border-black p-3 md:p-10 bg-white shadow-xl relative">
+                <div className="grid grid-cols-7 gap-1 md:gap-2 mb-6 md:mb-8 relative z-10">
                   {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
                     <div key={day} className="text-[10px] font-black uppercase text-center opacity-40 pb-4 border-b border-black/5">{day}</div>
                   ))}
@@ -428,14 +428,14 @@ export default function DuballoStandaloneManual() {
                         key={day} 
                         onClick={() => setSelectedDate(new Date(year, month, day))}
                         className={`
-                          aspect-square border-2 transition-all relative group flex flex-col items-center justify-start p-1.5 md:p-2
+                          aspect-square border transition-all relative group flex flex-col items-center justify-start p-1 md:p-2
                           ${active ? 'border-black bg-black text-white z-20 scale-105 shadow-lg' : 'border-gray-50 hover:border-[#33bbc5]'}
                           ${isSunday ? 'text-red-500' : isSaturday ? 'text-blue-500' : ''}
                           ${active && (isSunday || isSaturday) ? 'text-white' : ''}
                           ${isToday(year, month, day) && !active ? 'ring-2 ring-[#33bbc5] ring-inset' : ''}
                         `}
                       >
-                        <span className="text-base md:text-xl font-black mb-auto tracking-tighter leading-none">{day}</span>
+                        <span className="text-sm md:text-xl font-black mb-auto tracking-tighter leading-none">{day}</span>
                         
                         {assignments[dateKey]?.length > 0 && (
                           <div className="w-full flex flex-col gap-0.5 mt-0.5">
@@ -451,8 +451,8 @@ export default function DuballoStandaloneManual() {
                   })}
                 </div>
 
-                <div className="flex justify-between items-center pt-6 border-t-4 border-black">
-                   <div className="text-xl font-black uppercase tracking-tighter leading-none">
+                <div className="flex justify-between items-center pt-4 md:pt-6 border-t-[3px] md:border-t-4 border-black">
+                   <div className="text-lg md:text-xl font-black uppercase tracking-tighter leading-none">
                      {viewDate.toLocaleString('en-US', { month: 'short', year: 'numeric' })}
                    </div>
                    <div className="flex gap-2">
@@ -468,15 +468,15 @@ export default function DuballoStandaloneManual() {
                       </button>
                       <button 
                         onClick={() => changeMonth(-1)}
-                        className="w-10 h-10 border-[4px] border-black flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0.5 active:translate-y-0.5"
+                        className="w-8 h-8 md:w-10 md:h-10 border-[3px] md:border-[4px] border-black flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] md:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0.5 active:translate-y-0.5"
                       >
-                        <ChevronRight size={18} className="rotate-180" />
+                        <ChevronRight size={16} className="rotate-180" />
                       </button>
                       <button 
                         onClick={() => changeMonth(1)}
-                        className="w-10 h-10 border-[4px] border-black flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0.5 active:translate-y-0.5"
+                        className="w-8 h-8 md:w-10 md:h-10 border-[3px] md:border-[4px] border-black flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] md:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0.5 active:translate-y-0.5"
                       >
-                        <ChevronRight size={18} />
+                        <ChevronRight size={16} />
                       </button>
                    </div>
                 </div>
@@ -487,15 +487,15 @@ export default function DuballoStandaloneManual() {
                 key={`detail-${formatDateKey(selectedDate)}`}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-5 md:p-8 border-[10px] border-black bg-white shadow-lg relative overflow-hidden"
+                className="p-5 md:p-8 border-[6px] md:border-[10px] border-black bg-white shadow-lg relative overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-[#33bbc5]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
                 
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-6 pb-6 border-b-[4px] border-black/5 relative z-10">
                   <div className="flex items-center gap-6">
                     <div className="bg-black text-white px-6 py-4 rounded-sm text-center shadow-[6px_6px_0px_0px_rgba(51,187,197,1)]">
-                      <div className="text-[8px] font-black uppercase tracking-[0.4em] opacity-40 leading-none mb-2">{selectedDate.toLocaleString('en-US', { month: 'short' })}</div>
-                      <div className="text-3xl font-black leading-none tracking-tighter">{selectedDate.getDate()}</div>
+                      <div className="text-[8px] font-black uppercase tracking-[0.4em] opacity-40 leading-none mb-1 md:mb-2">{selectedDate.toLocaleString('en-US', { month: 'short' })}</div>
+                      <div className="text-2xl md:text-3xl font-black leading-none tracking-tighter">{selectedDate.getDate()}</div>
                     </div>
                     <div className="relative">
                       <div className="text-[8px] font-black uppercase tracking-[0.6em] text-[#33bbc5] mb-1">Operational Personnel</div>
@@ -556,11 +556,11 @@ export default function DuballoStandaloneManual() {
 
           {/* NEW FULL-WIDTH DAILY WORK LOG WIDGET */}
           <div className="mt-16 md:mt-24">
-            <motion.div 
+             <motion.div 
               key={`log-wide-${formatDateKey(selectedDate)}`}
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white border-[12px] border-black p-8 md:p-12 shadow-[32px_32px_0px_0px_rgba(0,0,0,0.05)] relative"
+              className="bg-white border-[6px] md:border-[12px] border-black p-5 md:p-12 shadow-[16px_16px_0px_0px_rgba(0,0,0,0.05)] md:shadow-[32px_32px_0px_0px_rgba(0,0,0,0.05)] relative"
             >
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
                 <div className="flex items-center gap-6">
@@ -577,9 +577,9 @@ export default function DuballoStandaloneManual() {
                       <div className="w-3 h-3 bg-[#33bbc5] rounded-full animate-pulse"></div>
                       Secure Cloud Sync Active
                     </div>
-                    <button 
+                   <button 
                       onClick={clearDayData}
-                      className="px-6 py-2 border-2 border-red-500 text-red-500 text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all"
+                      className="px-4 md:px-6 py-2 border-2 border-red-500 text-red-500 text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all w-full md:w-auto"
                     >
                       Clear Data
                     </button>
@@ -595,9 +595,9 @@ export default function DuballoStandaloneManual() {
                     const key = formatDateKey(selectedDate)
                     setLogs(prev => ({ ...prev, [key]: val }))
                   }}
-                  placeholder="오늘의 상세 업무 내용을 기록하세요 (회의록, 환자 피드백, 특이사항 등)..."
-                  rows={8}
-                  className="w-full bg-gray-50 border-[6px] p-10 font-bold text-xl md:text-2xl outline-none transition-all leading-relaxed resize-none shadow-inner border-gray-100 focus:border-black focus:bg-white"
+                  placeholder="상세 업무 내용을 기록하세요..."
+                  rows={6}
+                  className="w-full bg-gray-50 border-[4px] md:border-[6px] p-6 md:p-10 font-bold text-lg md:text-2xl outline-none transition-all leading-relaxed resize-none shadow-inner border-gray-100 focus:border-black focus:bg-white"
                 />
               </div>
               
