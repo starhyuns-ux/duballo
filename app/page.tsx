@@ -109,7 +109,7 @@ export default function DuballoStandaloneManual() {
 
   const handleSave = () => {
     const key = formatDateKey(selectedDate)
-    setAssignments(prev => ({ ...prev, [key]: tempManager }))
+    setAssignments(prev => ({ ...prev, [key]: { name: tempManager, time: tempTime } }))
     setLogs(prev => ({ ...prev, [key]: tempLog }))
   }
 
