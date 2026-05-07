@@ -465,9 +465,9 @@ export default function DuballoStandaloneManual() {
                         <span className="text-lg md:text-2xl font-black mb-auto tracking-tighter leading-none">{day}</span>
                         
                         {assignments[dateKey]?.length > 0 && (
-                          <div className="w-full overflow-hidden flex flex-col gap-1 mt-1">
-                            {assignments[dateKey].slice(0, 2).map(a => (
-                              <div key={a.id} className={`text-[8px] md:text-[10px] font-black truncate leading-tight py-0.5 px-1.5 rounded-sm ${active ? 'text-white/60 bg-white/10' : 'text-black bg-[#33bbc5] text-white shadow-sm'}`}>
+                          <div className="w-full flex flex-col gap-0.5 mt-1">
+                            {assignments[dateKey].slice(0, 3).map(a => (
+                              <div key={a.id} className={`text-[7px] md:text-[9px] font-black leading-none py-0.5 px-1 rounded-sm whitespace-nowrap overflow-hidden ${active ? 'text-white/60 bg-white/10' : 'text-black bg-[#33bbc5] text-white shadow-sm'}`}>
                                 {a.name}
                               </div>
                             ))}
