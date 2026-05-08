@@ -176,29 +176,7 @@ export default function DuballoStandaloneManual() {
     }))
   }
 
-  const clearDayData = () => {
-    const key = formatDateKey(selectedDate)
-    const newAssignments = { ...assignments }
-    const newLogs = { ...logs }
-    delete newAssignments[key]
-    delete newLogs[key]
-    setAssignments(newAssignments)
-    setLogs(newLogs)
-    setTempManager('')
-    setTempLog('')
-  }
 
-  const handleDelete = () => {
-    const key = formatDateKey(selectedDate)
-    const newAssignments = { ...assignments }
-    const newLogs = { ...logs }
-    delete newAssignments[key]
-    delete newLogs[key]
-    setAssignments(newAssignments)
-    setLogs(newLogs)
-    setTempManager('')
-    setTempLog('')
-  }
 
   const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate()
   const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay()
@@ -577,12 +555,7 @@ export default function DuballoStandaloneManual() {
                       <div className="w-3 h-3 bg-[#33bbc5] rounded-full animate-pulse"></div>
                       Secure Cloud Sync Active
                     </div>
-                   <button 
-                      onClick={clearDayData}
-                      className="px-4 md:px-6 py-2 border-2 border-red-500 text-red-500 text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all w-full md:w-auto"
-                    >
-                      Clear Data
-                    </button>
+
                   </div>
               </div>
 
