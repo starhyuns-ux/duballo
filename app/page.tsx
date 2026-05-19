@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { db } from '../lib/firebase'
 import { doc, onSnapshot, setDoc } from 'firebase/firestore'
+import { getGroupedDiseaseData } from '../lib/diseaseData'
 
 const SectionLabel = ({ text, number }: { text: string, number: string }) => (
   <div className="flex items-center gap-4 md:gap-8 mb-12 md:mb-16">
@@ -61,6 +62,8 @@ export default function DuballoStandaloneManual() {
   const [assignments, setAssignments] = React.useState<Record<string, { id: number, name: string, time: string }[]>>({})
   const [logs, setLogs] = React.useState<Record<string, string>>({})
   const [logEntries, setLogEntries] = React.useState<Record<string, { id: number, text: string, time: string }[]>>({})
+  const [diseaseSearchQuery, setDiseaseSearchQuery] = React.useState('')
+  const diseaseData = React.useMemo(() => getGroupedDiseaseData(undefined, 'ko'), [])
   const [stats, setStats] = React.useState<Record<string, { claims: number, analyses: number }>>({})
   const [teamMembers, setTeamMembers] = React.useState([
     { id: 1, name: '이지윤 실장', role: 'Insurance Claims Specialist', title: 'Team Leader', phone: '010-1234-5678', image: '/team-1.png' },
@@ -985,6 +988,104 @@ export default function DuballoStandaloneManual() {
               <div className="h-[2px] md:h-[4px] w-full bg-black/10 mb-8 md:mb-12"></div>
               <div className="text-[10px] md:text-sm font-black uppercase tracking-widest opacity-40">DU BALLO HOSPITAL KIOSK OPS</div>
            </div>
+        </section>
+
+
+
+        {/* 06. Disease Codes */}
+        <section className="mb-32 md:mb-64">
+          <SectionLabel number="06" text="Disease Code Reference" />
+          <div className="bg-white border-[6px] md:border-[12px] border-black p-5 md:p-12 shadow-[16px_16px_0px_0px_rgba(0,0,0,0.05)] md:shadow-[32px_32px_0px_0px_rgba(0,0,0,0.05)] relative">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+              <div className="flex items-center gap-6">
+                <div className="p-4 bg-black text-white rounded-sm shadow-lg">
+                  <ClipboardList size={32} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 mb-2">Claim Assistance</div>
+                  <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none">Disease Codes</h2>
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <input 
+                type="text" 
+                placeholder="질병명 또는 코드를 검색하세요..."
+                value={diseaseSearchQuery}
+                onChange={(e) => setDiseaseSearchQuery(e.target.value)}
+                className="w-full bg-gray-50 border-[4px] border-black p-4 font-bold text-lg outline-none focus:bg-white focus:border-[#33bbc5] transition-all"
+              />
+            </div>
+
+            <div className="space-y-8 max-h-[600px] overflow-y-auto pr-4 border-l-4 border-gray-100 pl-4">
+              {diseaseData.map(category => {
+                const filteredSub = category.subCategories.map(sub => {
+                  return {
+                    ...sub,
+                    items: sub.items.filter(item => 
+                      diseaseSearchQuery === '' || 
+                      item.name.toLowerCase().includes(diseaseSearchQuery.toLowerCase()) || 
+                      item.code.toLowerCase().includes(diseaseSearchQuery.toLowerCase())
+                    )
+                  }
+                }).filter(sub => sub.items.length > 0)
+
+                if (filteredSub.length === 0) return null
+
+                return (
+                  <div key={category.id} className="mb-8">
+                    <h3 className="text-2xl font-black uppercase bg-black text-white inline-block px-4 py-2 mb-4">
+                      {category.title}
+                    </h3>
+                    <div className="space-y-6">
+                      {filteredSub.map(sub => (
+                        <div key={sub.name} className="border-2 border-gray-200 p-4">
+                          <h4 className="text-lg font-bold mb-4 border-b-2 border-gray-100 pb-2 text-[#33bbc5]">{sub.name}</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {sub.items.map(item => (
+                              <div key={item.code} className="bg-gray-50 p-4 border-l-4 border-black hover:border-[#33bbc5] transition-colors group">
+                                <div className="flex justify-between items-start mb-2">
+                                  <span className="font-black text-lg">{item.name}</span>
+                                  <span className="font-mono font-bold bg-gray-200 px-2 py-1 text-sm">{item.code}</span>
+                                </div>
+                                {item.riders && item.riders.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mb-2">
+                                    {item.riders.map(r => (
+                                      <span key={r} className="text-[10px] font-bold bg-white border border-gray-300 px-1 py-0.5">{r}</span>
+                                    ))}
+                                  </div>
+                                )}
+                                {item.claimTips && (
+                                  <div className="text-xs font-bold text-gray-500 mb-1">
+                                    <span className="text-[#33bbc5]">TIP. </span>{item.claimTips}
+                                  </div>
+                                )}
+                                {item.deepAnalysis && (
+                                  <div className="text-xs font-bold text-gray-600">
+                                    <span className="text-red-500">ANALYSIS. </span>{item.deepAnalysis}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+              {diseaseData.every(c => c.subCategories.every(s => s.items.filter(item => 
+                      diseaseSearchQuery === '' || 
+                      item.name.toLowerCase().includes(diseaseSearchQuery.toLowerCase()) || 
+                      item.code.toLowerCase().includes(diseaseSearchQuery.toLowerCase())
+                    ).length === 0)) && (
+                <div className="text-center py-12 text-gray-400 font-bold">
+                  검색 결과가 없습니다.
+                </div>
+              )}
+            </div>
+          </div>
         </section>
 
         {/* Footer Editorial Info */}
