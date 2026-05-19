@@ -60,6 +60,7 @@ export default function DuballoStandaloneManual() {
   
   const [assignments, setAssignments] = React.useState<Record<string, { id: number, name: string, time: string }[]>>({})
   const [logs, setLogs] = React.useState<Record<string, string>>({})
+  const [stats, setStats] = React.useState<Record<string, { claims: number, analyses: number }>>({})
   const [teamMembers, setTeamMembers] = React.useState([
     { id: 1, name: '이지윤 실장', role: 'Insurance Claims Specialist', title: 'Team Leader', phone: '010-1234-5678', image: '/team-1.png' },
     { id: 2, name: '박준영 매니저', role: 'Field Support & Training', title: 'Operation Manager', phone: '010-8765-4321', image: '/team-2.png' }
@@ -87,6 +88,7 @@ export default function DuballoStandaloneManual() {
             if (data.assignments) setAssignments(data.assignments)
             if (data.logs) setLogs(data.logs)
             if (data.teamMembers) setTeamMembers(data.teamMembers)
+            if (data.stats) setStats(data.stats)
           }
           isInitialLoad.current = true // Critical: Data has been loaded from server
           setIsLoading(false)
@@ -121,9 +123,9 @@ export default function DuballoStandaloneManual() {
   // Update effect - Guarded by isInitialLoad
   React.useEffect(() => {
     if (!isLoading && isInitialLoad.current) {
-      syncToFirebase({ assignments, logs, teamMembers })
+      syncToFirebase({ assignments, logs, teamMembers, stats })
     }
-  }, [assignments, logs, teamMembers, isLoading])
+  }, [assignments, logs, teamMembers, stats, isLoading])
 
   const [tempManager, setTempManager] = React.useState('')
   const [tempTime, setTempTime] = React.useState('09:00 - 18:00')
@@ -193,6 +195,38 @@ export default function DuballoStandaloneManual() {
   const isSelected = (year: number, month: number, day: number) => {
     return selectedDate.getFullYear() === year && selectedDate.getMonth() === month && selectedDate.getDate() === day
   }
+
+  const handleIncrementStat = (type: 'claims' | 'analyses') => {
+    const key = formatDateKey(selectedDate)
+    setStats(prev => {
+      const current = prev[key] || { claims: 0, analyses: 0 }
+      return {
+        ...prev,
+        [key]: {
+          ...current,
+          [type]: current[type] + 1
+        }
+      }
+    })
+  }
+
+  const currentMonthStats = React.useMemo(() => {
+    let totalClaims = 0
+    let totalAnalyses = 0
+    
+    Object.keys(stats).forEach(dateKey => {
+      const [yearStr, monthStr] = dateKey.split('-')
+      if (
+        parseInt(yearStr) === viewDate.getFullYear() && 
+        parseInt(monthStr) === viewDate.getMonth() + 1
+      ) {
+        totalClaims += stats[dateKey].claims || 0
+        totalAnalyses += stats[dateKey].analyses || 0
+      }
+    })
+    
+    return { claims: totalClaims, analyses: totalAnalyses }
+  }, [stats, viewDate])
 
   return (
     <div className="bg-white min-h-screen font-sans selection:bg-[#33bbc5] selection:text-white pb-40 md:pb-80">
@@ -527,6 +561,57 @@ export default function DuballoStandaloneManual() {
                       <div className="text-xs font-black uppercase tracking-[0.6em] text-black/10">Archive Empty</div>
                     </div>
                   )}
+                </div>
+              </motion.div>
+
+              {/* STATS WIDGET */}
+              <motion.div
+                key={`stats-${formatDateKey(selectedDate)}`}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4"
+              >
+                {/* Claims Counter */}
+                <button
+                  onClick={() => handleIncrementStat('claims')}
+                  className="bg-white border-[4px] border-black p-6 flex flex-col items-center justify-center hover:bg-[#33bbc5] hover:text-white hover:border-[#33bbc5] transition-all group shadow-sm active:translate-y-1 active:shadow-none"
+                >
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 group-hover:opacity-100 mb-2">보험금청구</div>
+                  <div className="text-4xl font-black tracking-tighter">
+                    {stats[formatDateKey(selectedDate)]?.claims || 0}
+                    <span className="text-sm ml-1 opacity-50">건</span>
+                  </div>
+                  <div className="mt-2 text-[8px] bg-black text-white px-2 py-1 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Click to +1</div>
+                </button>
+
+                {/* Analyses Counter */}
+                <button
+                  onClick={() => handleIncrementStat('analyses')}
+                  className="bg-white border-[4px] border-black p-6 flex flex-col items-center justify-center hover:bg-black hover:text-white transition-all group shadow-sm active:translate-y-1 active:shadow-none"
+                >
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 group-hover:opacity-100 mb-2">보장분석</div>
+                  <div className="text-4xl font-black tracking-tighter">
+                    {stats[formatDateKey(selectedDate)]?.analyses || 0}
+                    <span className="text-sm ml-1 opacity-50">건</span>
+                  </div>
+                  <div className="mt-2 text-[8px] bg-white text-black px-2 py-1 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Click to +1</div>
+                </button>
+
+                {/* Monthly Cumulative */}
+                <div className="bg-gray-100 border-[4px] border-gray-200 p-6 flex flex-col items-center justify-center relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-[#33bbc5]/10 rounded-full blur-xl -mr-4 -mt-4"></div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#33bbc5] mb-2">월간 누적 ({viewDate.getMonth() + 1}월)</div>
+                  <div className="flex gap-4 w-full justify-center">
+                    <div className="text-center">
+                      <div className="text-[8px] font-bold text-gray-400 mb-1">청구</div>
+                      <div className="text-2xl font-black">{currentMonthStats.claims}</div>
+                    </div>
+                    <div className="w-[2px] bg-gray-300"></div>
+                    <div className="text-center">
+                      <div className="text-[8px] font-bold text-gray-400 mb-1">분석</div>
+                      <div className="text-2xl font-black">{currentMonthStats.analyses}</div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </div>
