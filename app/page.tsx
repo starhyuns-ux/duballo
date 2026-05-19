@@ -60,6 +60,7 @@ export default function DuballoStandaloneManual() {
   
   const [assignments, setAssignments] = React.useState<Record<string, { id: number, name: string, time: string }[]>>({})
   const [logs, setLogs] = React.useState<Record<string, string>>({})
+  const [logEntries, setLogEntries] = React.useState<Record<string, { id: number, text: string, time: string }[]>>({})
   const [stats, setStats] = React.useState<Record<string, { claims: number, analyses: number }>>({})
   const [teamMembers, setTeamMembers] = React.useState([
     { id: 1, name: '이지윤 실장', role: 'Insurance Claims Specialist', title: 'Team Leader', phone: '010-1234-5678', image: '/team-1.png' },
@@ -89,6 +90,14 @@ export default function DuballoStandaloneManual() {
             if (data.logs) setLogs(data.logs)
             if (data.teamMembers) setTeamMembers(data.teamMembers)
             if (data.stats) setStats(data.stats)
+            if (data.logEntries) setLogEntries(data.logEntries)
+            else if (data.logs && typeof Object.values(data.logs)[0] === 'string') {
+               const newLogs: any = {}
+               for (const [k, v] of Object.entries(data.logs)) {
+                 if (v) newLogs[k] = [{ id: Date.now(), text: v as string, time: '12:00 PM' }]
+               }
+               setLogEntries(newLogs)
+            }
           }
           isInitialLoad.current = true // Critical: Data has been loaded from server
           setIsLoading(false)
@@ -123,9 +132,9 @@ export default function DuballoStandaloneManual() {
   // Update effect - Guarded by isInitialLoad
   React.useEffect(() => {
     if (!isLoading && isInitialLoad.current) {
-      syncToFirebase({ assignments, logs, teamMembers, stats })
+      syncToFirebase({ assignments, logs, teamMembers, stats, logEntries })
     }
-  }, [assignments, logs, teamMembers, stats, isLoading])
+  }, [assignments, logs, teamMembers, stats, logEntries, isLoading])
 
   const [tempManager, setTempManager] = React.useState('')
   const [tempTime, setTempTime] = React.useState('09:00 - 18:00')
@@ -137,10 +146,9 @@ export default function DuballoStandaloneManual() {
   }
 
   React.useEffect(() => {
-    const key = formatDateKey(selectedDate)
-    setTempLog(logs[key] || '')
+    setTempLog('')
     // We don't clear tempManager/tempTime automatically to allow quick multiple adds
-  }, [selectedDate, logs])
+  }, [selectedDate])
 
   const handleAddAssignment = (name: string, time: string) => {
     if (!name) return
@@ -196,18 +204,34 @@ export default function DuballoStandaloneManual() {
     return selectedDate.getFullYear() === year && selectedDate.getMonth() === month && selectedDate.getDate() === day
   }
 
-  const handleIncrementStat = (type: 'claims' | 'analyses') => {
+  const handleUpdateStat = (type: 'claims' | 'analyses', delta: number) => {
     const key = formatDateKey(selectedDate)
     setStats(prev => {
       const current = prev[key] || { claims: 0, analyses: 0 }
+      const newValue = Math.max(0, current[type] + delta)
       return {
         ...prev,
         [key]: {
           ...current,
-          [type]: current[type] + 1
+          [type]: newValue
         }
       }
     })
+  }
+
+  const handleAddLog = () => {
+    if (!tempLog.trim()) return
+    const key = formatDateKey(selectedDate)
+    const newEntry = {
+      id: Date.now(),
+      text: tempLog.trim(),
+      time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+    }
+    setLogEntries(prev => ({
+      ...prev,
+      [key]: [...(prev[key] || []), newEntry]
+    }))
+    setTempLog('') // Clear input
   }
 
   const currentMonthStats = React.useMemo(() => {
@@ -572,30 +596,30 @@ export default function DuballoStandaloneManual() {
                 className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4"
               >
                 {/* Claims Counter */}
-                <button
-                  onClick={() => handleIncrementStat('claims')}
-                  className="bg-white border-[4px] border-black p-6 flex flex-col items-center justify-center hover:bg-[#33bbc5] hover:text-white hover:border-[#33bbc5] transition-all group shadow-sm active:translate-y-1 active:shadow-none"
-                >
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 group-hover:opacity-100 mb-2">보험금청구</div>
-                  <div className="text-4xl font-black tracking-tighter">
+                <div className="bg-white border-[4px] border-black p-6 flex flex-col items-center justify-center relative group shadow-sm transition-all hover:border-[#33bbc5]">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 mb-2">보험금청구</div>
+                  <div className="text-4xl font-black tracking-tighter cursor-pointer hover:text-[#33bbc5]" onClick={() => handleUpdateStat('claims', 1)}>
                     {stats[formatDateKey(selectedDate)]?.claims || 0}
                     <span className="text-sm ml-1 opacity-50">건</span>
                   </div>
-                  <div className="mt-2 text-[8px] bg-black text-white px-2 py-1 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Click to +1</div>
-                </button>
+                  <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={(e) => { e.stopPropagation(); handleUpdateStat('claims', -1) }} className="w-6 h-6 bg-gray-100 hover:bg-red-500 hover:text-white rounded-full flex items-center justify-center font-bold text-xs">-</button>
+                    <button onClick={(e) => { e.stopPropagation(); handleUpdateStat('claims', 1) }} className="w-6 h-6 bg-gray-100 hover:bg-[#33bbc5] hover:text-white rounded-full flex items-center justify-center font-bold text-xs">+</button>
+                  </div>
+                </div>
 
                 {/* Analyses Counter */}
-                <button
-                  onClick={() => handleIncrementStat('analyses')}
-                  className="bg-white border-[4px] border-black p-6 flex flex-col items-center justify-center hover:bg-black hover:text-white transition-all group shadow-sm active:translate-y-1 active:shadow-none"
-                >
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 group-hover:opacity-100 mb-2">보장분석</div>
-                  <div className="text-4xl font-black tracking-tighter">
+                <div className="bg-white border-[4px] border-black p-6 flex flex-col items-center justify-center relative group shadow-sm transition-all hover:border-[#33bbc5]">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50 mb-2">보장분석</div>
+                  <div className="text-4xl font-black tracking-tighter cursor-pointer hover:text-[#33bbc5]" onClick={() => handleUpdateStat('analyses', 1)}>
                     {stats[formatDateKey(selectedDate)]?.analyses || 0}
                     <span className="text-sm ml-1 opacity-50">건</span>
                   </div>
-                  <div className="mt-2 text-[8px] bg-white text-black px-2 py-1 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Click to +1</div>
-                </button>
+                  <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={(e) => { e.stopPropagation(); handleUpdateStat('analyses', -1) }} className="w-6 h-6 bg-gray-100 hover:bg-red-500 hover:text-white rounded-full flex items-center justify-center font-bold text-xs">-</button>
+                    <button onClick={(e) => { e.stopPropagation(); handleUpdateStat('analyses', 1) }} className="w-6 h-6 bg-gray-100 hover:bg-[#33bbc5] hover:text-white rounded-full flex items-center justify-center font-bold text-xs">+</button>
+                  </div>
+                </div>
 
                 {/* Monthly Cumulative */}
                 <div className="bg-gray-100 border-[4px] border-gray-200 p-6 flex flex-col items-center justify-center relative overflow-hidden">
@@ -647,25 +671,49 @@ export default function DuballoStandaloneManual() {
               <div className="relative">
                 <textarea 
                   value={tempLog}
-                  onChange={(e) => {
-                    const val = e.target.value
-                    setTempLog(val)
-                    const key = formatDateKey(selectedDate)
-                    setLogs(prev => ({ ...prev, [key]: val }))
+                  onChange={(e) => setTempLog(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleAddLog()
+                    }
                   }}
-                  placeholder="상세 업무 내용을 기록하세요..."
-                  rows={6}
-                  className="w-full bg-gray-50 border-[4px] md:border-[6px] p-6 md:p-10 font-bold text-lg md:text-2xl outline-none transition-all leading-relaxed resize-none shadow-inner border-gray-100 focus:border-black focus:bg-white"
+                  placeholder="상세 업무 내용을 기록하고 엔터 또는 등록 버튼을 누르세요..."
+                  rows={3}
+                  className="w-full bg-gray-50 border-[4px] md:border-[6px] p-6 md:p-8 font-bold text-lg md:text-xl outline-none transition-all leading-relaxed resize-none shadow-inner border-gray-100 focus:border-[#33bbc5] focus:bg-white"
                 />
+                <button 
+                  onClick={handleAddLog}
+                  className="absolute bottom-4 right-4 bg-[#33bbc5] text-white px-6 py-2 font-black uppercase tracking-widest text-sm hover:bg-black transition-all shadow-md active:translate-y-0.5 active:shadow-none"
+                >
+                  등록
+                </button>
               </div>
-              
-              <div className="mt-8 flex justify-between items-center">
-                <div className="text-[10px] font-black uppercase tracking-widest opacity-20">
-                  Duballo Ops Terminal v2.0
-                </div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-[#33bbc5]">
-                  Character Count: {tempLog.length}
-                </div>
+
+              {/* LOG LIST */}
+              <div className="mt-8 space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                {logEntries[formatDateKey(selectedDate)]?.map(entry => (
+                  <div key={entry.id} className="bg-gray-50 border-l-4 border-[#33bbc5] p-4 flex gap-4 group">
+                    <div className="text-[10px] font-black text-gray-400 mt-1 whitespace-nowrap">{entry.time}</div>
+                    <div className="text-base font-bold flex-1 whitespace-pre-wrap">{entry.text}</div>
+                    <button 
+                      onClick={() => {
+                        setLogEntries(prev => ({
+                          ...prev,
+                          [formatDateKey(selectedDate)]: prev[formatDateKey(selectedDate)].filter(e => e.id !== entry.id)
+                        }))
+                      }}
+                      className="text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600 transition-all p-2"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+                {(!logEntries[formatDateKey(selectedDate)] || logEntries[formatDateKey(selectedDate)].length === 0) && (
+                  <div className="py-8 text-center text-gray-400 font-bold text-sm border-2 border-dashed border-gray-200">
+                    등록된 업무 일지가 없습니다.
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
