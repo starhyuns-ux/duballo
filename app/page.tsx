@@ -62,6 +62,7 @@ export default function DuballoStandaloneManual() {
   const [assignments, setAssignments] = React.useState<Record<string, { id: number, name: string, time: string }[]>>({})
   const [logs, setLogs] = React.useState<Record<string, string>>({})
   const [logEntries, setLogEntries] = React.useState<Record<string, { id: number, text: string, time: string }[]>>({})
+  const [isDiseaseModalOpen, setIsDiseaseModalOpen] = React.useState(false)
   const [diseaseSearchQuery, setDiseaseSearchQuery] = React.useState('')
   const diseaseData = React.useMemo(() => getGroupedDiseaseData(undefined, 'ko'), [])
   const [stats, setStats] = React.useState<Record<string, { claims: number, analyses: number }>>({})
@@ -281,14 +282,22 @@ export default function DuballoStandaloneManual() {
               </h1>
             </div>
             <div className="w-full md:w-auto md:text-right flex flex-col items-start md:items-end">
-              <a 
-                href="https://lifree1.com/app" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 bg-[#33bbc5] text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-black uppercase tracking-widest text-xs md:text-sm hover:bg-black transition-all mb-6 md:mb-8 shadow-xl hover:-translate-y-1 w-full md:w-auto justify-center"
-              >
-                Launch Kiosk App <ExternalLink size={16} />
-              </a>
+              <div className="flex flex-col sm:flex-row gap-4 mb-6 md:mb-8 justify-end w-full">
+                <button
+                  onClick={() => setIsDiseaseModalOpen(true)}
+                  className="inline-flex items-center gap-3 bg-white border-[4px] border-black text-black px-6 md:px-8 py-3 md:py-4 font-black uppercase tracking-widest text-xs md:text-sm hover:bg-black hover:text-white transition-all shadow-xl hover:-translate-y-1 w-full sm:w-auto justify-center group"
+                >
+                  <FileText size={16} className="group-hover:scale-110 transition-transform" /> 질병코드 조회
+                </button>
+                <a 
+                  href="https://lifree1.com/app" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 bg-[#33bbc5] text-white px-6 md:px-8 py-3 md:py-4 rounded-full font-black uppercase tracking-widest text-xs md:text-sm hover:bg-black transition-all shadow-xl hover:-translate-y-1 w-full sm:w-auto justify-center"
+                >
+                  Launch Kiosk App <ExternalLink size={16} />
+                </a>
+              </div>
               <span className="font-serif italic text-2xl sm:text-4xl lg:text-6xl text-[#33bbc5] block mb-2 md:mb-6">
                 hello duballo
               </span>
@@ -992,101 +1001,7 @@ export default function DuballoStandaloneManual() {
 
 
 
-        {/* 06. Disease Codes */}
-        <section className="mb-32 md:mb-64">
-          <SectionLabel number="06" text="Disease Code Reference" />
-          <div className="bg-white border-[6px] md:border-[12px] border-black p-5 md:p-12 shadow-[16px_16px_0px_0px_rgba(0,0,0,0.05)] md:shadow-[32px_32px_0px_0px_rgba(0,0,0,0.05)] relative">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
-              <div className="flex items-center gap-6">
-                <div className="p-4 bg-black text-white rounded-sm shadow-lg">
-                  <ClipboardList size={32} />
-                </div>
-                <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 mb-2">Claim Assistance</div>
-                  <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-none">Disease Codes</h2>
-                </div>
-              </div>
-            </div>
 
-            <div className="mb-8">
-              <input 
-                type="text" 
-                placeholder="질병명 또는 코드를 검색하세요..."
-                value={diseaseSearchQuery}
-                onChange={(e) => setDiseaseSearchQuery(e.target.value)}
-                className="w-full bg-gray-50 border-[4px] border-black p-4 font-bold text-lg outline-none focus:bg-white focus:border-[#33bbc5] transition-all"
-              />
-            </div>
-
-            <div className="space-y-8 max-h-[600px] overflow-y-auto pr-4 border-l-4 border-gray-100 pl-4">
-              {diseaseData.map(category => {
-                const filteredSub = category.subCategories.map(sub => {
-                  return {
-                    ...sub,
-                    items: sub.items.filter(item => 
-                      diseaseSearchQuery === '' || 
-                      item.name.toLowerCase().includes(diseaseSearchQuery.toLowerCase()) || 
-                      item.code.toLowerCase().includes(diseaseSearchQuery.toLowerCase())
-                    )
-                  }
-                }).filter(sub => sub.items.length > 0)
-
-                if (filteredSub.length === 0) return null
-
-                return (
-                  <div key={category.id} className="mb-8">
-                    <h3 className="text-2xl font-black uppercase bg-black text-white inline-block px-4 py-2 mb-4">
-                      {category.title}
-                    </h3>
-                    <div className="space-y-6">
-                      {filteredSub.map(sub => (
-                        <div key={sub.name} className="border-2 border-gray-200 p-4">
-                          <h4 className="text-lg font-bold mb-4 border-b-2 border-gray-100 pb-2 text-[#33bbc5]">{sub.name}</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {sub.items.map(item => (
-                              <div key={item.code} className="bg-gray-50 p-4 border-l-4 border-black hover:border-[#33bbc5] transition-colors group">
-                                <div className="flex justify-between items-start mb-2">
-                                  <span className="font-black text-lg">{item.name}</span>
-                                  <span className="font-mono font-bold bg-gray-200 px-2 py-1 text-sm">{item.code}</span>
-                                </div>
-                                {item.riders && item.riders.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mb-2">
-                                    {item.riders.map(r => (
-                                      <span key={r} className="text-[10px] font-bold bg-white border border-gray-300 px-1 py-0.5">{r}</span>
-                                    ))}
-                                  </div>
-                                )}
-                                {item.claimTips && (
-                                  <div className="text-xs font-bold text-gray-500 mb-1">
-                                    <span className="text-[#33bbc5]">TIP. </span>{item.claimTips}
-                                  </div>
-                                )}
-                                {item.deepAnalysis && (
-                                  <div className="text-xs font-bold text-gray-600">
-                                    <span className="text-red-500">ANALYSIS. </span>{item.deepAnalysis}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
-              {diseaseData.every(c => c.subCategories.every(s => s.items.filter(item => 
-                      diseaseSearchQuery === '' || 
-                      item.name.toLowerCase().includes(diseaseSearchQuery.toLowerCase()) || 
-                      item.code.toLowerCase().includes(diseaseSearchQuery.toLowerCase())
-                    ).length === 0)) && (
-                <div className="text-center py-12 text-gray-400 font-bold">
-                  검색 결과가 없습니다.
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
 
         {/* Footer Editorial Info */}
         <footer className="pt-20 md:pt-40 border-t-2 md:border-t-4 border-black flex flex-col md:flex-row justify-between gap-16 md:gap-24 items-start md:items-end">
@@ -1113,6 +1028,117 @@ export default function DuballoStandaloneManual() {
       <div className="fixed top-1/2 right-0 -translate-y-1/2 rotate-90 origin-right translate-x-full pr-24 pointer-events-none hidden lg:block">
         <span className="text-sm font-black uppercase tracking-[1em] text-black/10">DUBALLO KIOSK OPERATIONS MANUAL</span>
       </div>
+
+      {/* Disease Code Modal */}
+      {isDiseaseModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-12">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsDiseaseModalOpen(false)}></div>
+          <div className="relative w-full max-w-6xl bg-white border-[6px] md:border-[12px] border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,0.5)] md:shadow-[32px_32px_0px_0px_rgba(0,0,0,0.5)] flex flex-col max-h-full">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 md:p-10 border-b-[4px] border-black bg-gray-50 shrink-0">
+              <div className="flex items-center gap-4 md:gap-6">
+                <div className="p-3 md:p-4 bg-[#33bbc5] text-white rounded-sm">
+                  <FileText size={28} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#33bbc5] mb-1">Duballo Docs</div>
+                  <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter leading-none">Disease Codes</h2>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsDiseaseModalOpen(false)}
+                className="text-black hover:text-red-500 transition-colors p-2"
+              >
+                <XCircle size={36} />
+              </button>
+            </div>
+
+            {/* Search Box */}
+            <div className="p-6 md:p-10 shrink-0">
+              <input 
+                type="text" 
+                placeholder="질병명 또는 코드를 검색하세요..."
+                value={diseaseSearchQuery}
+                onChange={(e) => setDiseaseSearchQuery(e.target.value)}
+                className="w-full bg-white border-[4px] border-black p-4 md:p-6 font-bold text-xl md:text-2xl outline-none focus:border-[#33bbc5] transition-all shadow-inner"
+                autoFocus
+              />
+            </div>
+
+            {/* List */}
+            <div className="p-6 md:p-10 pt-0 overflow-y-auto min-h-[300px]">
+              <div className="space-y-8 pr-4">
+                {diseaseData.map(category => {
+                  const filteredSub = category.subCategories.map(sub => {
+                    return {
+                      ...sub,
+                      items: sub.items.filter(item => 
+                        diseaseSearchQuery === '' || 
+                        item.name.toLowerCase().includes(diseaseSearchQuery.toLowerCase()) || 
+                        item.code.toLowerCase().includes(diseaseSearchQuery.toLowerCase())
+                      )
+                    }
+                  }).filter(sub => sub.items.length > 0)
+
+                  if (filteredSub.length === 0) return null
+
+                  return (
+                    <div key={category.id} className="mb-8">
+                      <h3 className="text-xl md:text-2xl font-black uppercase bg-black text-white inline-block px-4 py-2 mb-6 shadow-sm">
+                        {category.title}
+                      </h3>
+                      <div className="space-y-6">
+                        {filteredSub.map(sub => (
+                          <div key={sub.name} className="border-l-4 border-gray-200 pl-4 md:pl-6">
+                            <h4 className="text-lg md:text-xl font-bold mb-4 text-[#33bbc5]">{sub.name}</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {sub.items.map(item => (
+                                <div key={item.code} className="bg-gray-50 p-4 border-[2px] border-gray-200 hover:border-black transition-colors group">
+                                  <div className="flex justify-between items-start mb-3">
+                                    <span className="font-black text-lg">{item.name}</span>
+                                    <span className="font-mono font-bold bg-[#33bbc5] text-white px-2 py-1 text-sm shadow-sm">{item.code}</span>
+                                  </div>
+                                  {item.riders && item.riders.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 mb-3">
+                                      {item.riders.map(r => (
+                                        <span key={r} className="text-[10px] font-black bg-white border border-gray-300 px-1.5 py-0.5 text-gray-600">{r}</span>
+                                      ))}
+                                    </div>
+                                  )}
+                                  {item.claimTips && (
+                                    <div className="text-xs font-bold text-gray-500 mb-2 leading-relaxed">
+                                      <span className="text-[#33bbc5] font-black mr-1">TIP.</span>{item.claimTips}
+                                    </div>
+                                  )}
+                                  {item.deepAnalysis && (
+                                    <div className="text-xs font-bold text-gray-700 leading-relaxed">
+                                      <span className="text-red-500 font-black mr-1">ANALYSIS.</span>{item.deepAnalysis}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+                {diseaseData.every(c => c.subCategories.every(s => s.items.filter(item => 
+                        diseaseSearchQuery === '' || 
+                        item.name.toLowerCase().includes(diseaseSearchQuery.toLowerCase()) || 
+                        item.code.toLowerCase().includes(diseaseSearchQuery.toLowerCase())
+                      ).length === 0)) && (
+                  <div className="text-center py-20 text-gray-400">
+                    <FileText size={48} className="mx-auto mb-4 opacity-20" />
+                    <div className="font-black text-xl">검색 결과가 없습니다.</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
