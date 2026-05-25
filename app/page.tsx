@@ -67,8 +67,6 @@ export default function DuballoStandaloneManual() {
   const diseaseData = React.useMemo(() => getGroupedDiseaseData(undefined, 'ko'), [])
   const [stats, setStats] = React.useState<Record<string, { claims: number, analyses: number }>>({})
   const [teamMembers, setTeamMembers] = React.useState([
-    { id: 1, name: '이지윤 실장', role: 'Insurance Claims Specialist', title: 'Team Leader', phone: '010-1234-5678', image: '/team-1.png' },
-    { id: 2, name: '박준영 매니저', role: 'Field Support & Training', title: 'Operation Manager', phone: '010-8765-4321', image: '/team-2.png' },
     { id: 3, name: '이광현', role: 'Field Specialist', title: 'Manager', phone: '', image: '/team-placeholder.png' },
     { id: 4, name: '홍현정', role: 'Field Specialist', title: 'Manager', phone: '', image: '/team-placeholder.png' },
     { id: 5, name: '이창휘', role: 'Field Specialist', title: 'Manager', phone: '', image: '/team-placeholder.png' },
@@ -97,10 +95,12 @@ export default function DuballoStandaloneManual() {
             if (data.assignments) setAssignments(data.assignments)
             if (data.logs) setLogs(data.logs)
             if (data.teamMembers) {
-              const loadedMembers = [...data.teamMembers]
+              const loadedMembers = data.teamMembers.filter(
+                (m: any) => !m.name.includes('이지윤') && !m.name.includes('박준영')
+              )
               const requiredNames = ['이광현', '홍현정', '이창휘', '김미숙']
               requiredNames.forEach((name, index) => {
-                if (!loadedMembers.some(m => m.name === name)) {
+                if (!loadedMembers.some((m: any) => m.name === name)) {
                   loadedMembers.push({
                     id: 100 + index,
                     name,
