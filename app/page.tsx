@@ -68,7 +68,11 @@ export default function DuballoStandaloneManual() {
   const [stats, setStats] = React.useState<Record<string, { claims: number, analyses: number }>>({})
   const [teamMembers, setTeamMembers] = React.useState([
     { id: 1, name: '이지윤 실장', role: 'Insurance Claims Specialist', title: 'Team Leader', phone: '010-1234-5678', image: '/team-1.png' },
-    { id: 2, name: '박준영 매니저', role: 'Field Support & Training', title: 'Operation Manager', phone: '010-8765-4321', image: '/team-2.png' }
+    { id: 2, name: '박준영 매니저', role: 'Field Support & Training', title: 'Operation Manager', phone: '010-8765-4321', image: '/team-2.png' },
+    { id: 3, name: '이광현', role: 'Field Specialist', title: 'Manager', phone: '', image: '/team-placeholder.png' },
+    { id: 4, name: '홍현정', role: 'Field Specialist', title: 'Manager', phone: '', image: '/team-placeholder.png' },
+    { id: 5, name: '이창휘', role: 'Field Specialist', title: 'Manager', phone: '', image: '/team-placeholder.png' },
+    { id: 6, name: '김미숙', role: 'Field Specialist', title: 'Manager', phone: '', image: '/team-placeholder.png' }
   ])
 
   const [isLoading, setIsLoading] = React.useState(true)
@@ -92,7 +96,23 @@ export default function DuballoStandaloneManual() {
             const data = snapshot.data()
             if (data.assignments) setAssignments(data.assignments)
             if (data.logs) setLogs(data.logs)
-            if (data.teamMembers) setTeamMembers(data.teamMembers)
+            if (data.teamMembers) {
+              const loadedMembers = [...data.teamMembers]
+              const requiredNames = ['이광현', '홍현정', '이창휘', '김미숙']
+              requiredNames.forEach((name, index) => {
+                if (!loadedMembers.some(m => m.name === name)) {
+                  loadedMembers.push({
+                    id: 100 + index,
+                    name,
+                    role: 'Field Specialist',
+                    title: 'Manager',
+                    phone: '',
+                    image: '/team-placeholder.png'
+                  })
+                }
+              })
+              setTeamMembers(loadedMembers)
+            }
             if (data.stats) setStats(data.stats)
             if (data.logEntries) setLogEntries(data.logEntries)
             else if (data.logs && typeof Object.values(data.logs)[0] === 'string') {
