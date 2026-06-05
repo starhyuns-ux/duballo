@@ -287,6 +287,7 @@ export default function DuballoStandaloneManual() {
   }
 
   const removeAssignment = (dateKey: string, id: number) => {
+    if (!window.confirm("정말로 이 담당자 배정을 삭제하시겠습니까?")) return
     setAssignments(prev => ({
       ...prev,
       [dateKey]: (prev[dateKey] || []).filter(a => a.id !== id)
@@ -813,10 +814,12 @@ export default function DuballoStandaloneManual() {
                     <div className="text-base font-bold flex-1 whitespace-pre-wrap">{entry.text}</div>
                     <button 
                       onClick={() => {
-                        setLogEntries(prev => ({
-                          ...prev,
-                          [formatDateKey(selectedDate)]: prev[formatDateKey(selectedDate)].filter(e => e.id !== entry.id)
-                        }))
+                        if (window.confirm("정말로 이 업무 일지를 삭제하시겠습니까?")) {
+                          setLogEntries(prev => ({
+                            ...prev,
+                            [formatDateKey(selectedDate)]: prev[formatDateKey(selectedDate)].filter(e => e.id !== entry.id)
+                          }))
+                        }
                       }}
                       className="text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600 transition-all p-2"
                     >
