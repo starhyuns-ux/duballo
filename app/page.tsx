@@ -122,6 +122,61 @@ export default function DuballoStandaloneManual() {
                }
                setLogEntries(newLogs)
             }
+
+            // Migration from localStorage for May records
+            try {
+              const savedAssignmentsStr = localStorage.getItem('duballo_assignments')
+              const savedLogsStr = localStorage.getItem('duballo_logs')
+              
+              const currentAssignments = data.assignments || {}
+              const currentLogEntries = data.logEntries || {}
+              
+              let migratedAssignments = { ...currentAssignments }
+              let migratedLogEntries = { ...currentLogEntries }
+              let hasMigration = false
+
+              if (savedAssignmentsStr) {
+                const savedAssignments = JSON.parse(savedAssignmentsStr)
+                Object.keys(savedAssignments).forEach(key => {
+                  if (!currentAssignments[key]) {
+                    const val = savedAssignments[key]
+                    if (Array.isArray(val)) {
+                      migratedAssignments[key] = val
+                    } else if (typeof val === 'string') {
+                      migratedAssignments[key] = [{ id: Date.now(), name: val, time: '09:00 - 18:00' }]
+                    } else if (val && typeof val === 'object') {
+                      migratedAssignments[key] = [{ id: Date.now(), name: val.name || 'Unknown', time: val.time || '09:00 - 18:00' }]
+                    }
+                    hasMigration = true
+                  }
+                })
+              }
+
+              if (savedLogsStr) {
+                const savedLogs = JSON.parse(savedLogsStr)
+                Object.keys(savedLogs).forEach(key => {
+                  if (!currentLogEntries[key]) {
+                    const val = savedLogs[key]
+                    if (typeof val === 'string') {
+                      migratedLogEntries[key] = [{ id: Date.now(), text: val, time: '12:00 PM' }]
+                    } else if (Array.isArray(val)) {
+                      migratedLogEntries[key] = val
+                    }
+                    hasMigration = true
+                  }
+                })
+              }
+
+              if (hasMigration) {
+                console.log("Local storage migration detected. Merging data into Firestore...")
+                setAssignments(migratedAssignments)
+                setLogEntries(migratedLogEntries)
+                localStorage.removeItem('duballo_assignments')
+                localStorage.removeItem('duballo_logs')
+              }
+            } catch (err) {
+              console.error("Local storage migration error:", err)
+            }
           }
           isInitialLoad.current = true // Critical: Data has been loaded from server
           setIsLoading(false)
