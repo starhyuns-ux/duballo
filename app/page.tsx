@@ -75,6 +75,7 @@ export default function DuballoStandaloneManual() {
 
   const [isLoading, setIsLoading] = React.useState(true)
   const isInitialLoad = React.useRef(false)
+  const lastServerData = React.useRef<string | null>(null)
 
   // Firebase Real-time Sync
   React.useEffect(() => {
@@ -92,6 +93,12 @@ export default function DuballoStandaloneManual() {
         (snapshot) => {
           if (snapshot.exists()) {
             const data = snapshot.data()
+            let resolvedAssignments = data.assignments || {}
+            let resolvedLogEntries = data.logEntries || {}
+            let resolvedLogs = data.logs || {}
+            let resolvedTeamMembers = data.teamMembers || []
+            let resolvedStats = data.stats || {}
+
             if (data.assignments) setAssignments(data.assignments)
             if (data.logs) setLogs(data.logs)
             if (data.teamMembers) {
@@ -112,15 +119,18 @@ export default function DuballoStandaloneManual() {
                 }
               })
               setTeamMembers(loadedMembers)
+              resolvedTeamMembers = loadedMembers
             }
             if (data.stats) setStats(data.stats)
-            if (data.logEntries) setLogEntries(data.logEntries)
-            else if (data.logs && typeof Object.values(data.logs)[0] === 'string') {
+            if (data.logEntries) {
+              setLogEntries(data.logEntries)
+            } else if (data.logs && typeof Object.values(data.logs)[0] === 'string') {
                const newLogs: any = {}
                for (const [k, v] of Object.entries(data.logs)) {
                  if (v) newLogs[k] = [{ id: Date.now(), text: v as string, time: '12:00 PM' }]
                }
                setLogEntries(newLogs)
+               resolvedLogEntries = newLogs
             }
 
             // Migration from localStorage for May records
@@ -128,17 +138,14 @@ export default function DuballoStandaloneManual() {
               const savedAssignmentsStr = localStorage.getItem('duballo_assignments')
               const savedLogsStr = localStorage.getItem('duballo_logs')
               
-              const currentAssignments = data.assignments || {}
-              const currentLogEntries = data.logEntries || {}
-              
-              let migratedAssignments = { ...currentAssignments }
-              let migratedLogEntries = { ...currentLogEntries }
+              let migratedAssignments = { ...resolvedAssignments }
+              let migratedLogEntries = { ...resolvedLogEntries }
               let hasMigration = false
 
               if (savedAssignmentsStr) {
                 const savedAssignments = JSON.parse(savedAssignmentsStr)
                 Object.keys(savedAssignments).forEach(key => {
-                  if (!currentAssignments[key]) {
+                  if (!resolvedAssignments[key]) {
                     const val = savedAssignments[key]
                     if (Array.isArray(val)) {
                       migratedAssignments[key] = val
@@ -155,7 +162,7 @@ export default function DuballoStandaloneManual() {
               if (savedLogsStr) {
                 const savedLogs = JSON.parse(savedLogsStr)
                 Object.keys(savedLogs).forEach(key => {
-                  if (!currentLogEntries[key]) {
+                  if (!resolvedLogEntries[key]) {
                     const val = savedLogs[key]
                     if (typeof val === 'string') {
                       migratedLogEntries[key] = [{ id: Date.now(), text: val, time: '12:00 PM' }]
@@ -171,12 +178,23 @@ export default function DuballoStandaloneManual() {
                 console.log("Local storage migration detected. Merging data into Firestore...")
                 setAssignments(migratedAssignments)
                 setLogEntries(migratedLogEntries)
+                resolvedAssignments = migratedAssignments
+                resolvedLogEntries = migratedLogEntries
                 localStorage.removeItem('duballo_assignments')
                 localStorage.removeItem('duballo_logs')
               }
             } catch (err) {
               console.error("Local storage migration error:", err)
             }
+
+            // Set lastServerData ref to prevent echo-save loops
+            lastServerData.current = JSON.stringify({
+              assignments: resolvedAssignments,
+              logs: resolvedLogs,
+              teamMembers: resolvedTeamMembers,
+              stats: resolvedStats,
+              logEntries: resolvedLogEntries
+            })
           }
           isInitialLoad.current = true // Critical: Data has been loaded from server
           setIsLoading(false)
@@ -208,10 +226,20 @@ export default function DuballoStandaloneManual() {
     }
   }
 
-  // Update effect - Guarded by isInitialLoad
+  // Update effect - Guarded by isInitialLoad and lastServerData check
   React.useEffect(() => {
     if (!isLoading && isInitialLoad.current) {
-      syncToFirebase({ assignments, logs, teamMembers, stats, logEntries })
+      const localString = JSON.stringify({
+        assignments: assignments || {},
+        logs: logs || {},
+        teamMembers: teamMembers || [],
+        stats: stats || {},
+        logEntries: logEntries || {}
+      })
+      if (localString !== lastServerData.current) {
+        syncToFirebase({ assignments, logs, teamMembers, stats, logEntries })
+        lastServerData.current = localString
+      }
     }
   }, [assignments, logs, teamMembers, stats, logEntries, isLoading])
 
